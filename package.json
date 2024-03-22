@@ -13,6 +13,7 @@
   "keywords": [],
   "license": "ISC",
   "dependencies": {
+    "fastq": "^1.17.1",
     "undici": "^6.10.1"
   }
 }
