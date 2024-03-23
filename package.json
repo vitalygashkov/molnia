@@ -1,6 +1,6 @@
 {
   "name": "esor",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Node.js download utility",
   "bugs": {
@@ -10,6 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/vitalygashkov/esor.git"
   },
+  "license": "AGPL-3.0",
   "main": "esor.js",
   "bin": {
     "esor": "esor.js"
@@ -18,7 +19,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "license": "ISC",
   "dependencies": {
     "fastq": "^1.17.1",
     "undici": "^6.10.1"
