@@ -3,14 +3,28 @@
   "version": "0.0.2",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Node.js download utility",
-  "bugs": {
-    "url": "https://github.com/vitalygashkov/esor/issues"
-  },
+  "license": "AGPL-3.0",
+  "keywords": [
+    "downloader",
+    "lightweight",
+    "http",
+    "https",
+    "curl",
+    "wget"
+  ],
+  "readmeFilename": "README.md",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vitalygashkov/esor.git"
   },
-  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/vitalygashkov/esor/issues",
+    "email": "vitalygashkov@vk.com"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/vitalygashkov"
+  },
   "main": "esor.js",
   "bin": {
     "esor": "esor.js"
@@ -18,9 +32,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "engines": {
+    "node": ">=20.0"
+  },
   "dependencies": {
     "fastq": "^1.17.1",
     "undici": "^6.10.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30"
   }
 }
