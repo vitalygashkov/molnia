@@ -2,7 +2,14 @@
   "name": "esor",
   "version": "0.0.1",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
-  "description": "Fast Node.js download utility",
+  "description": "Node.js download utility",
+  "bugs": {
+    "url": "https://github.com/vitalygashkov/esor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitalygashkov/esor.git"
+  },
   "main": "esor.js",
   "bin": {
     "esor": "esor.js"

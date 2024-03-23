@@ -23,8 +23,9 @@ const download = async (url, output) => {
   console.timeEnd('Download');
 };
 
-(async () => {
-  const args = getArgs();
+const args = getArgs();
+
+const start = async () => {
   const progressiveUrl =
     'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4';
   const dashUrl =
@@ -33,6 +34,8 @@ const download = async (url, output) => {
     'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8';
   const output = 'test.mp4';
   // await download(progressiveUrl, output);
-})();
+};
+
+if (args) start();
 
 module.exports = { download };
