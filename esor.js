@@ -8,32 +8,30 @@ const { downloadProgressive } = require('./lib/progressive');
 const { downloadDash } = require('./lib/dash');
 const { downloadHls } = require('./lib/hls');
 
+const parseOutput = (url, output) => output || url?.split('/').at(-1);
+
 const download = async (url, output) => {
   const headers = await fetchHeaders(url);
-  console.time('Download');
+  const parsedOutput = parseOutput(url, output);
+  console.time(`File ${parsedOutput} downloaded`);
   if (headers.isDash) {
-    await downloadDash(url, output);
+    await downloadDash(url, parsedOutput);
   } else if (headers.isHls) {
-    await downloadHls(url, output);
+    await downloadHls(url, parsedOutput);
   } else if (headers.isProgressive) {
-    await downloadProgressive(url, output, headers);
+    await downloadProgressive(url, parsedOutput, headers);
   } else {
     console.error('File is not supported');
   }
-  console.timeEnd('Download');
+  console.timeEnd(`File ${parsedOutput} downloaded`);
 };
 
 const args = getArgs();
 
 const start = async () => {
-  const progressiveUrl =
-    'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4';
-  const dashUrl =
-    'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd';
-  const hlsUrl =
-    'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8';
-  const output = 'test.mp4';
-  // await download(progressiveUrl, output);
+  for (const url of args.positionals) {
+    await download(url, args.output);
+  }
 };
 
 if (args) start();
