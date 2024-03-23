@@ -22,8 +22,8 @@
     "email": "vitalygashkov@vk.com"
   },
   "funding": {
-    "type": "patreon",
-    "url": "https://www.patreon.com/vitalygashkov"
+    "type": "individual",
+    "url": "https://boosty.to/vitalygashkov"
   },
   "main": "esor.js",
   "bin": {
