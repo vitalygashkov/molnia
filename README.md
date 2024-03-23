@@ -1,4 +1,4 @@
-Node.js **download utility**: fast, lightweight, and flexible.
+Utility for easy file downloading: fast, lightweight, cross-platform and flexible.
 
 ## Description
 
