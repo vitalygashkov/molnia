@@ -2,6 +2,7 @@
 
 'use strict';
 
+const { getArgs } = require('./lib/args');
 const { fetchHeaders } = require('./lib/http');
 const { downloadProgressive } = require('./lib/progressive');
 const { downloadDash } = require('./lib/dash');
@@ -23,6 +24,7 @@ const download = async (url, output) => {
 };
 
 (async () => {
+  const args = getArgs();
   const progressiveUrl =
     'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4';
   const dashUrl =
@@ -30,5 +32,7 @@ const download = async (url, output) => {
   const hlsUrl =
     'https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8';
   const output = 'test.mp4';
-  await download(progressiveUrl, output);
+  // await download(progressiveUrl, output);
 })();
+
+module.exports = { download };
