@@ -1,4 +1,12 @@
+# esor
+
+[![npm version](https://img.shields.io/npm/v/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
+[![npm downloads/month](https://img.shields.io/npm/dm/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
+[![npm downloads](https://img.shields.io/npm/dt/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
+
 Utility for easy file downloading: fast, lightweight, cross-platform and flexible.
+
+> Esor means eater in Latin.
 
 ## Description
 
