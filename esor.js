@@ -13,7 +13,6 @@ const parseOutput = (url, output) => output || url?.split('/').at(-1);
 const download = async (url, options) => {
   const headers = await fetchHeaders(url);
   options.output = parseOutput(url, options.output);
-  console.time(`File ${options.output} downloaded`);
   if (headers.isDash) {
     await downloadDash(url, options);
   } else if (headers.isHls) {
@@ -23,7 +22,6 @@ const download = async (url, options) => {
   } else {
     console.error('File is not supported');
   }
-  console.timeEnd(`File ${options.output} downloaded`);
 };
 
 const options = parseOptions();
