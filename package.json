@@ -26,6 +26,7 @@
     "url": "https://boosty.to/vitalygashkov"
   },
   "main": "esor.js",
+  "types": "./types/esor.d.ts",
   "bin": {
     "esor": "esor.js"
   },
@@ -42,6 +43,9 @@
     "undici": "^6.10.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30"
+    "@types/node": "^20.11.30",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.3"
   }
 }
