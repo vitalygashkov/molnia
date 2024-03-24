@@ -49,3 +49,6 @@ jobs:
             ${{ env.PACKAGE_NAME }}-linux-x64.zip
             ${{ env.PACKAGE_NAME }}-mac-x64.zip
             ${{ env.PACKAGE_NAME }}-win-x64.zip
+
+permissions:
+  contents: write
