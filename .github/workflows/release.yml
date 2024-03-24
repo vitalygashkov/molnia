@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          check-latest: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get name and version from package.json
+        run: |
+          test -n $(node -p -e "require('./package.json').name") &&
+          test -n $(node -p -e "require('./package.json').version") &&
+          echo PACKAGE_NAME=$(node -p -e "require('./package.json').name") >> $GITHUB_ENV &&
+          echo PACKAGE_VERSION=$(node -p -e "require('./package.json').version") >> $GITHUB_ENV || exit 1
+
+      - name: Build
+        run: npm run build
+
+      - name: Compress
+        run: |
+          zip -9 -j ${{ env.PACKAGE_NAME }}-linux-x64.zip ./build/linux/${{ env.PACKAGE_NAME }}
+          zip -9 -j ${{ env.PACKAGE_NAME }}-mac-x64.zip ./build/mac/${{ env.PACKAGE_NAME }}
+          zip -9 -j ${{ env.PACKAGE_NAME }}-win-x64.zip ./build/win/${{ env.PACKAGE_NAME }}.exe
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          tag_name: 'v${{ env.PACKAGE_VERSION }}'
+          generate_release_notes: true
+          files: |
+            ${{ env.PACKAGE_NAME }}-linux-x64.zip
+            ${{ env.PACKAGE_NAME }}-mac-x64.zip
+            ${{ env.PACKAGE_NAME }}-win-x64.zip
