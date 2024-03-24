@@ -6,7 +6,7 @@ A file download utility written in pure JavaScript with minimal dependencies. It
 
 ## Quick start
 
-Using Node.js built-in `npx` command:
+If you have Node.js installed, you can run **esor** via `npx`:
 
 ```
 npx esor [options] url1 [url2] [url...]

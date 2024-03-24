@@ -1,7 +1,6 @@
 {
   "name": "esor",
   "version": "0.0.2",
-  "type": "module",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Node.js download utility",
   "license": "AGPL-3.0",
@@ -30,15 +29,7 @@
   "bin": {
     "esor": "esor.js"
   },
-  "exports": {
-    ".": {
-      "require": "./dist/esor.cjs",
-      "import": "./dist/esor.js"
-    }
-  },
   "scripts": {
-    "prepare": "npm run bundle",
-    "bundle": "tsup esor.js --format cjs,esm",
     "test:mp4": "node esor https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",
     "test:dash": "node esor https://dash.akamaized.net/dash264/TestCases/1a/sony/SNE_DASH_SD_CASE1A_REVISED.mpd",
     "test:hls": "node esor https://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8"
@@ -51,8 +42,6 @@
     "undici": "^6.10.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.3"
+    "@types/node": "^20.11.30"
   }
 }

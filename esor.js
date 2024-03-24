@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
-import { getArgs } from './lib/args';
-import { fetchHeaders } from './lib/http';
-import { downloadProgressive } from './lib/progressive';
-import { downloadDash } from './lib/dash';
-import { downloadHls } from './lib/hls';
+'use strict';
+
+const { getArgs } = require('./lib/args');
+const { fetchHeaders } = require('./lib/http');
+const { downloadProgressive } = require('./lib/progressive');
+const { downloadDash } = require('./lib/dash');
+const { downloadHls } = require('./lib/hls');
 
 const parseOutput = (url, output) => output || url?.split('/').at(-1);
 
@@ -34,4 +36,4 @@ const start = async () => {
 
 if (args) start();
 
-export default { download };
+module.exports = { download };
