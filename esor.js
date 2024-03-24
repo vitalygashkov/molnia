@@ -2,38 +2,39 @@
 
 'use strict';
 
-const { getArgs } = require('./lib/args');
-const { fetchHeaders } = require('./lib/http');
+const { parseOptions } = require('./lib/args');
+const { fetchHeaders, setFetchOptions } = require('./lib/http');
 const { downloadProgressive } = require('./lib/progressive');
 const { downloadDash } = require('./lib/dash');
 const { downloadHls } = require('./lib/hls');
 
 const parseOutput = (url, output) => output || url?.split('/').at(-1);
 
-const download = async (url, output) => {
+const download = async (url, options) => {
   const headers = await fetchHeaders(url);
-  const parsedOutput = parseOutput(url, output);
-  console.time(`File ${parsedOutput} downloaded`);
+  options.output = parseOutput(url, options.output);
+  console.time(`File ${options.output} downloaded`);
   if (headers.isDash) {
-    await downloadDash(url, parsedOutput);
+    await downloadDash(url, options);
   } else if (headers.isHls) {
-    await downloadHls(url, parsedOutput);
+    await downloadHls(url, options);
   } else if (headers.isProgressive) {
-    await downloadProgressive(url, parsedOutput, headers);
+    await downloadProgressive(url, options, headers.contentLength);
   } else {
     console.error('File is not supported');
   }
-  console.timeEnd(`File ${parsedOutput} downloaded`);
+  console.timeEnd(`File ${options.output} downloaded`);
 };
 
-const args = getArgs();
+const options = parseOptions();
 
 const start = async () => {
-  for (const url of args.positionals) {
-    await download(url, args.output);
+  setFetchOptions({ maxRedirections: 5 });
+  for (const url of options.urls) {
+    await download(url, options);
   }
 };
 
-if (args) start();
+if (options) start();
 
 module.exports = { download };
