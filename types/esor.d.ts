@@ -1,7 +1,7 @@
 export interface DownloadOptions {
   output?: string;
-  header?: Record<string, string>;
-  'user-agent'?: string;
+  headers?: Record<string, string>;
+  userAgent?: string;
 }
 
 export function download(url: string, options?: DownloadOptions): Promise<void>;
