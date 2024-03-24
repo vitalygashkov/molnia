@@ -10,14 +10,34 @@ Utility for easy file downloading: fast, lightweight, cross-platform and flexibl
 
 ## Description
 
-A file download utility written in pure JavaScript with minimal dependencies. It can be used as a standalone program with command line interface, as well as a library for use in third-party Node.js projects.
+A file download utility written in JavaScript with minimal dependencies. It can be used as a standalone program with command line interface, as well as a library for use in third-party Node.js projects.
 
 ## Quick start
 
-If you have Node.js installed, you can run **esor** via `npx`:
+### Command-line interface
+
+Install Node.js and run CLI via `npx`:
 
 ```
-npx esor [options] url1 [url2] [url...]
+$ npx esor [options] url1 [url2] [url...]
+```
+
+### Library
+
+Install package using NPM:
+
+```
+$ npm i esor
+```
+
+Import into your project:
+
+```js
+const { download } = require('esor');
+
+(async () => {
+  await download('https://example.com/file.txt', { output: '~/Users/John/Downloads/file.txt' });
+})();
 ```
 
 ## Features
