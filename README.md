@@ -30,13 +30,14 @@ Install package using NPM:
 $ npm i esor
 ```
 
-Import into your project:
+Use in your project:
 
 ```js
 const { download } = require('esor');
 
 (async () => {
-  await download('https://example.com/file.txt', { output: '~/Users/John/Downloads/file.txt' });
+  const options = { output: '~/Users/John/Downloads/file.txt' };
+  await download('https://example.com/file.txt', options);
 })();
 ```
 
