@@ -16,16 +16,16 @@ A file download utility written in JavaScript with minimal dependencies. It can 
 
 ### Command-line interface
 
-Install Node.js and run CLI via `npx`:
+Download executable for your platform from [latest release](https://github.com/vitalygashkov/esor/releases/latest) and call it from command line:
 
 ```
-npx esor [options] url1 [url2] [url...]
+esor [options] url1 [url2] [url...]
 ```
 
 Example:
 
 ```
-npx esor --output /Users/Ivan/Downloads/10Mb.dat https://proof.ovh.net/files/10Mb.dat
+esor --output C:\Users\Ivan\Downloads https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Library
