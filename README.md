@@ -19,7 +19,13 @@ A file download utility written in JavaScript with minimal dependencies. It can 
 Install Node.js and run CLI via `npx`:
 
 ```
-$ npx esor [options] url1 [url2] [url...]
+npx esor [options] url1 [url2] [url...]
+```
+
+Example:
+
+```
+npx esor --output /Users/Ivan/Downloads/10Mb.dat https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Library
@@ -27,7 +33,7 @@ $ npx esor [options] url1 [url2] [url...]
 Install package using NPM:
 
 ```
-$ npm i esor
+npm i esor
 ```
 
 Use in your project:
@@ -36,8 +42,8 @@ Use in your project:
 const { download } = require('esor');
 
 (async () => {
-  const options = { output: '~/Users/John/Downloads/file.txt' };
-  await download('https://example.com/file.txt', options);
+  const options = { output: '/Users/Ivan/Downloads/10Mb.dat' };
+  await download('https://proof.ovh.net/files/10Mb.dat', options);
 })();
 ```
 
