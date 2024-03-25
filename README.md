@@ -25,7 +25,7 @@ esor [options] url1 [url2] [url...]
 Example:
 
 ```
-esor --output C:\Users\Ivan\Downloads https://proof.ovh.net/files/10Mb.dat
+esor --output C:\Users\Ivan\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Library
