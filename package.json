@@ -1,6 +1,6 @@
 {
   "name": "esor",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Fast download utility for Node.js and standalone use",
   "license": "AGPL-3.0",
@@ -31,10 +31,11 @@
     "esor": "esor.js"
   },
   "scripts": {
-    "build": "npm run build:linux && npm run build:mac && npm run build:win",
-    "build:win": "pkg . -t node20-win-x64 -o ./build/win/esor.exe",
-    "build:mac": "pkg . -t node20-macos-x64 -o ./build/mac/esor",
-    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux/esor",
+    "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
+    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/esor.exe",
+    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/esor",
+    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/esor",
+    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/esor",
     "build:bun": "bun build . --compile --outfile esor",
     "test:mp4": "node esor https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",
     "test:dash": "node esor https://dash.akamaized.net/dash264/TestCases/1a/sony/SNE_DASH_SD_CASE1A_REVISED.mpd",
