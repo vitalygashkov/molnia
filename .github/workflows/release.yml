@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '*.*.*'
 
 jobs:
   build:
@@ -34,9 +34,10 @@ jobs:
 
       - name: Compress
         run: |
-          zip -9 -j ${{ env.PACKAGE_NAME }}-linux-x64.zip ./build/linux/${{ env.PACKAGE_NAME }}
-          zip -9 -j ${{ env.PACKAGE_NAME }}-mac-x64.zip ./build/mac/${{ env.PACKAGE_NAME }}
-          zip -9 -j ${{ env.PACKAGE_NAME }}-win-x64.zip ./build/win/${{ env.PACKAGE_NAME }}.exe
+          zip -9 -j ${{ env.PACKAGE_NAME }}-linux-x64.zip ./build/linux-x64/${{ env.PACKAGE_NAME }}
+          zip -9 -j ${{ env.PACKAGE_NAME }}-macos-x64.zip ./build/macos-x64/${{ env.PACKAGE_NAME }}
+          zip -9 -j ${{ env.PACKAGE_NAME }}-macos-arm64.zip ./build/macos-arm64/${{ env.PACKAGE_NAME }}
+          zip -9 -j ${{ env.PACKAGE_NAME }}-win-x64.zip ./build/win-x64/${{ env.PACKAGE_NAME }}.exe
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -47,7 +48,8 @@ jobs:
           generate_release_notes: true
           files: |
             ${{ env.PACKAGE_NAME }}-linux-x64.zip
-            ${{ env.PACKAGE_NAME }}-mac-x64.zip
+            ${{ env.PACKAGE_NAME }}-macos-x64.zip
+            ${{ env.PACKAGE_NAME }}-macos-arm64.zip
             ${{ env.PACKAGE_NAME }}-win-x64.zip
 
 permissions:
