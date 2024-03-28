@@ -27,7 +27,7 @@ const download = async (url, options) => {
 const options = parseOptions();
 
 const start = async () => {
-  setFetchOptions({ maxRedirections: 5 });
+  setFetchOptions({ maxRedirections: 5, maxRetries: 5 });
   for (const url of options.urls) {
     await download(url, options);
   }
