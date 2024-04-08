@@ -39,12 +39,10 @@ npm i esor
 Use in your project:
 
 ```js
-const { download } = require('esor');
+import { download } from 'esor';
 
-(async () => {
-  const options = { output: '/Users/Ivan/Downloads/10Mb.dat' };
-  await download('https://proof.ovh.net/files/10Mb.dat', options);
-})();
+const options = { output: `C:\Users\Ivan\Downloads\10Mb.dat` };
+await download('https://proof.ovh.net/files/10Mb.dat', options);
 ```
 
 ## Features
