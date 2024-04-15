@@ -4,6 +4,11 @@
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/esor/latest/total?style=flat&color=black)
 [![npm downloads](https://img.shields.io/npm/dt/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
 
+<p align="right">
+  <span>English</span> •
+  <a href="https://github.com/vitalygashkov/esor/tree/main/docs/README.ru.md">Pусский</a>
+</p>
+
 Utility for easy file downloading: fast, lightweight, cross-platform and flexible.
 
 > Esor means eater in Latin.
@@ -25,7 +30,7 @@ esor [options] url1 [url2] [url...]
 Example:
 
 ```
-esor --output C:\Users\Ivan\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
+esor --output C:\Users\John\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Library
@@ -41,7 +46,7 @@ Use in your project:
 ```js
 import { download } from 'esor';
 
-const options = { output: `C:\Users\Ivan\Downloads\10Mb.dat` };
+const options = { output: `C:\Users\John\Downloads\10Mb.dat` };
 await download('https://proof.ovh.net/files/10Mb.dat', options);
 ```
 
