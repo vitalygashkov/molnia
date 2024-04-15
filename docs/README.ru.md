@@ -4,10 +4,10 @@
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/esor/latest/total?style=flat&color=black)
 [![npm downloads](https://img.shields.io/npm/dt/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
 
-<p align="right">
+<div align="right">
   <a href="https://github.com/vitalygashkov/esor/tree/main/README.md">English</a> •
   <span>Русский</span>
-</p>
+</div>
 
 Быстрая, легковесная и кроссплатформенная утилита для скачивания файлов.
 
