@@ -17,3 +17,8 @@ export function downloadSegments(
   urls: string[],
   options?: DownloadOptions,
 ): Promise<void>;
+
+export function setAgentOptions(options: {
+  proxy?: string;
+  retry?: number;
+}): void;
