@@ -4,14 +4,12 @@
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/esor/latest/total?style=flat&color=black)
 [![npm downloads](https://img.shields.io/npm/dt/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
 
-<div align="right">
+Быстрая, легковесная и кроссплатформенная утилита для скачивания файлов.
+
+<div align="left">
   <a href="https://github.com/vitalygashkov/esor/tree/main/README.md">English</a> •
   <span>Русский</span>
 </div>
-
-Быстрая, легковесная и кроссплатформенная утилита для скачивания файлов.
-
-> В переводе с латинского esor - "пожиратель".
 
 ## Описание
 
@@ -52,6 +50,9 @@ await download('https://proof.ovh.net/files/10Mb.dat', options);
 
 ## Особенности
 
-- Интерфейс командной строки
-- Поддержка HTTP и HTTPS (в планах поддержка HTTP2)
-- Параллелизм
+- **Параллелизм**: использование очереди с ограничением по размеру для загрузки сегментов
+- **Повторное выполнение** запросов в случае неудачи
+- Поддержка **прокси**
+- Поддержка **нескольких протоколов**: HTTP, HTTPS
+- **Минимум зависимостей** и сокращенный размер кода
+- **Интерфейс командной строки**
