@@ -1,6 +1,6 @@
 {
   "name": "esor",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Fast download utility for Node.js and standalone use",
   "license": "AGPL-3.0",
@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "fastq": "^1.17.1",
-    "undici": "^6.14.0"
+    "undici": "^6.14.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
