@@ -2,6 +2,7 @@ import { Progress } from './progress';
 
 export interface DownloadOptions {
   output?: string;
+  tempDir?: string;
   headers?: Record<string, string>;
   connections?: number;
   onChunkData?: (data: Buffer) => Buffer | void;
