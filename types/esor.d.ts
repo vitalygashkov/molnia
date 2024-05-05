@@ -2,11 +2,12 @@ import { Progress } from './progress';
 
 export interface DownloadOptions {
   output?: string;
+  tempDir?: string;
   headers?: Record<string, string>;
   connections?: number;
   onChunkData?: (data: Buffer) => Buffer | void;
   onProgress?: (progress: Progress) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: Error, url: string) => void;
 }
 
 export type { Progress };
