@@ -7,7 +7,7 @@ export interface DownloadOptions {
   connections?: number;
   onChunkData?: (data: Buffer) => Buffer | void;
   onProgress?: (progress: Progress) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: Error, url: string) => void;
 }
 
 export type { Progress };
