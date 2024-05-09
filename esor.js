@@ -3,7 +3,7 @@
 'use strict';
 
 const { parseOptions } = require('./lib/args');
-const { fetchHeaders, setAgentOptions } = require('./lib/http');
+const { fetchHead, setAgentOptions } = require('./lib/http');
 const { downloadProgressive } = require('./lib/progressive');
 const { save } = require('./lib/save');
 const { downloadSegments } = require('./lib/segments');
@@ -11,12 +11,12 @@ const { downloadSegments } = require('./lib/segments');
 const parseOutput = (url, output) => output || url?.split('/').at(-1);
 
 const download = async (url, options = {}) => {
-  const headers = await fetchHeaders(url);
-  options.output = parseOutput(url, options.output);
-  if (headers.isProgressive) {
-    await downloadProgressive(url, options, headers.contentLength);
+  const head = await fetchHead(url);
+  options.output = parseOutput(head.url, options.output);
+  if (head.isProgressive) {
+    await downloadProgressive(head.url, options, head.contentLength);
   } else {
-    await save({ url, headers, output: options.output });
+    await save({ url: head.url, headers: head, output: options.output });
   }
 };
 
