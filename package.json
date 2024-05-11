@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "fastq": "^1.17.1",
-    "undici": "^5.28.4"
+    "undici": "^6.16.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.11",
