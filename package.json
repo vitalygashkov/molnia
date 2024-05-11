@@ -1,6 +1,6 @@
 {
   "name": "esor",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Fast download utility for Node.js and standalone use",
   "license": "AGPL-3.0",
