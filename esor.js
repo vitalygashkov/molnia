@@ -3,7 +3,7 @@
 'use strict';
 
 const { parseOptions } = require('./lib/args');
-const { fetchHead, setAgentOptions } = require('./lib/http');
+const { fetchHead, setClientOptions } = require('./lib/http');
 const { downloadProgressive } = require('./lib/progressive');
 const { save } = require('./lib/save');
 const { downloadSegments } = require('./lib/segments');
@@ -22,7 +22,7 @@ const download = async (url, options = {}) => {
 
 const options = parseOptions();
 
-setAgentOptions({ retry: options?.retry, proxy: options?.proxy });
+setClientOptions({ retry: options?.retry, proxy: options?.proxy });
 
 const start = async () => {
   for (const url of options.urls) await download(url, options);
@@ -30,4 +30,4 @@ const start = async () => {
 
 if (options) start();
 
-module.exports = { download, downloadSegments, setAgentOptions };
+module.exports = { download, downloadSegments, setClientOptions };
