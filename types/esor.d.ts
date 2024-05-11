@@ -19,7 +19,7 @@ export function downloadSegments(
   options?: DownloadOptions,
 ): Promise<void>;
 
-export function setAgentOptions(options: {
+export function setClientOptions(options: {
   proxy?: string;
   retry?: number;
 }): void;
