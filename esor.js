@@ -28,7 +28,7 @@ const download = async (url, options = {}) => {
 
 const options = parseOptions();
 
-setClientOptions({ retry: options?.retry, proxy: options?.proxy });
+setClientOptions(options);
 
 const start = async () => {
   for (const url of options.urls) await download(url, options);
