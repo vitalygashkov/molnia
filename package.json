@@ -44,11 +44,10 @@
     "node": ">=20.0"
   },
   "dependencies": {
-    "fastq": "^1.17.1",
-    "undici": "^6.16.1"
+    "undici": "^6.18.1"
   },
   "devDependencies": {
-    "@types/node": "^20.12.11",
+    "@types/node": "^20.12.12",
     "@yao-pkg/pkg": "^5.11.5",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
