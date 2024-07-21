@@ -22,7 +22,11 @@ const download = async (url, options = {}) => {
       head.contentType,
     );
   } else {
-    await save({ url: head.url, headers: head, output: options.output });
+    await save({
+      url: head.url,
+      headers: options.headers,
+      output: options.output,
+    });
   }
 };
 
