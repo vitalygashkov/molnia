@@ -11,7 +11,7 @@ const { downloadSegments } = require('./lib/segments');
 const parseOutput = (url, output) => output || url?.split('/').at(-1);
 
 const download = async (url, options = {}) => {
-  if (options.proxy) setClientOptions({ proxy: options.proxy });
+  setClientOptions(options);
   const head = await fetchHead(url);
   options.output = parseOutput(head.url, options.output);
   if (head.isProgressive) {
@@ -32,7 +32,7 @@ const download = async (url, options = {}) => {
 
 const options = parseOptions();
 
-setClientOptions(options);
+if (options) setClientOptions(options);
 
 const start = async () => {
   for (const url of options.urls) await download(url, options);
