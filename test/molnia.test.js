@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const { strictEqual } = require('node:assert');
 const { existsSync } = require('node:fs');
-const { downloadSegments } = require('../esor');
+const { downloadSegments } = require('../molnia');
 
 test('download segments', async () => {
   const urls = [

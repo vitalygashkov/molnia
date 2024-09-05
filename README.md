@@ -1,14 +1,14 @@
-# esor
+# molnia
 
-[![npm version](https://img.shields.io/npm/v/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
-![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/esor/latest/total?style=flat&color=black)
-[![npm downloads](https://img.shields.io/npm/dt/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
+[![npm version](https://img.shields.io/npm/v/molnia?style=flat&color=black)](https://www.npmjs.com/package/molnia)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/molnia/latest/total?style=flat&color=black)
+[![npm downloads](https://img.shields.io/npm/dt/molnia?style=flat&color=black)](https://www.npmjs.com/package/molnia)
 
 Utility for easy file downloading: fast, lightweight, cross-platform and flexible.
 
 <div align="left">
   <span>English</span> •
-  <a href="https://github.com/vitalygashkov/esor/tree/main/docs/README.ru.md">Pусский</a>
+  <a href="https://github.com/vitalygashkov/molnia/tree/main/docs/README.ru.md">Pусский</a>
 </div>
 
 ## Description
@@ -19,16 +19,16 @@ A file download utility written in JavaScript with minimal dependencies. It can 
 
 ### Command-line interface
 
-Download executable for your platform from [latest release](https://github.com/vitalygashkov/esor/releases/latest) and call it from command line:
+Download executable for your platform from [latest release](https://github.com/vitalygashkov/molnia/releases/latest) and call it from command line:
 
 ```
-esor [options] url1 [url2] [url...]
+molnia [options] url1 [url2] [url...]
 ```
 
 Example:
 
 ```
-esor --output C:\Users\John\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
+molnia --output C:\Users\John\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Library
@@ -36,13 +36,13 @@ esor --output C:\Users\John\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.
 Install package using NPM:
 
 ```
-npm i esor
+npm i molnia
 ```
 
 Use in your project:
 
 ```js
-import { download } from 'esor';
+import { download } from 'molnia';
 
 const options = { output: `C:\Users\John\Downloads\10Mb.dat` };
 await download('https://proof.ovh.net/files/10Mb.dat', options);
