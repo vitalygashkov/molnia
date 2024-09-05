@@ -1,13 +1,13 @@
-# esor
+# molnia
 
-[![npm version](https://img.shields.io/npm/v/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
-![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/esor/latest/total?style=flat&color=black)
-[![npm downloads](https://img.shields.io/npm/dt/esor?style=flat&color=black)](https://www.npmjs.com/package/esor)
+[![npm version](https://img.shields.io/npm/v/molnia?style=flat&color=black)](https://www.npmjs.com/package/molnia)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/vitalygashkov/molnia/latest/total?style=flat&color=black)
+[![npm downloads](https://img.shields.io/npm/dt/molnia?style=flat&color=black)](https://www.npmjs.com/package/molnia)
 
 Быстрая, легковесная и кроссплатформенная утилита для скачивания файлов.
 
 <div align="left">
-  <a href="https://github.com/vitalygashkov/esor/tree/main/README.md">English</a> •
+  <a href="https://github.com/vitalygashkov/molnia/tree/main/README.md">English</a> •
   <span>Русский</span>
 </div>
 
@@ -19,16 +19,16 @@
 
 ### Интерфейс командной строки (CLI)
 
-Скачайте исполняемый файл для вашей ОС из [последнего релиза](https://github.com/vitalygashkov/esor/releases/latest) и вызовите его из командной строки:
+Скачайте исполняемый файл для вашей ОС из [последнего релиза](https://github.com/vitalygashkov/molnia/releases/latest) и вызовите его из командной строки:
 
 ```
-esor [options] url1 [url2] [url...]
+molnia [options] url1 [url2] [url...]
 ```
 
 Пример:
 
 ```
-esor --output C:\Users\Ivan\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
+molnia --output C:\Users\Ivan\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Библиотека
@@ -36,13 +36,13 @@ esor --output C:\Users\Ivan\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.
 Установите пакет, используя NPM:
 
 ```
-npm i esor
+npm i molnia
 ```
 
 Импортируйте необходимые функции в ваш проект:
 
 ```js
-import { download } from 'esor';
+import { download } from 'molnia';
 
 const options = { output: `C:\Users\Ivan\Downloads\10Mb.dat` };
 await download('https://proof.ovh.net/files/10Mb.dat', options);

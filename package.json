@@ -1,8 +1,8 @@
 {
-  "name": "esor",
-  "version": "0.0.11",
+  "name": "molnia",
+  "version": "0.0.12",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
-  "description": "Lightweight library for downloading files",
+  "description": "Fast and lightweight library for downloading files",
   "license": "AGPL-3.0",
   "keywords": [
     "downloader",
@@ -15,30 +15,30 @@
   "readmeFilename": "README.md",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vitalygashkov/esor.git"
+    "url": "git+https://github.com/vitalygashkov/molnia.git"
   },
   "bugs": {
-    "url": "https://github.com/vitalygashkov/esor/issues",
+    "url": "https://github.com/vitalygashkov/molnia/issues",
     "email": "vitalygashkov@vk.com"
   },
   "funding": {
     "type": "individual",
     "url": "https://boosty.to/vitalygashkov"
   },
-  "main": "esor.js",
-  "types": "./types/esor.d.ts",
+  "main": "molnia.js",
+  "types": "./types/molnia.d.ts",
   "bin": {
-    "esor": "esor.js"
+    "molnia": "molnia.js"
   },
   "scripts": {
     "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
-    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/esor.exe",
-    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/esor",
-    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/esor",
-    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/esor",
-    "build:bun": "bun build . --compile --outfile esor",
+    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/molnia.exe",
+    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/molnia",
+    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/molnia",
+    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/molnia",
+    "build:bun": "bun build . --compile --outfile molnia",
     "test": "node --test",
-    "test:mp4": "node esor https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4"
+    "test:mp4": "node molnia https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4"
   },
   "engines": {
     "node": ">=20.0"
