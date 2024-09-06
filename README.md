@@ -13,22 +13,22 @@ Utility for easy file downloading: fast, lightweight, cross-platform and flexibl
 
 ## Description
 
-A file download utility written in JavaScript with minimal dependencies. It can be used as a standalone program with command line interface, as well as a library for use in third-party Node.js projects.
+A file download utility written in JavaScript with minimal dependencies. It can be used both as a command line interface and as a library for use in third-party Node.js projects.
 
 ## Quick start
 
 ### Command-line interface
 
-Download executable for your platform from [latest release](https://github.com/vitalygashkov/molnia/releases/latest) and call it from command line:
+Download and install [Node.js](https://nodejs.org/en/download/). Run app:
 
 ```
-molnia [options] url1 [url2] [url...]
+npx molnia [options] url1 [url2] [url...]
 ```
 
 Example:
 
 ```
-molnia --output C:\Users\John\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
+npx molnia --output C:\Users\John\Downloads\10Mb.dat https://proof.ovh.net/files/10Mb.dat
 ```
 
 ### Library
