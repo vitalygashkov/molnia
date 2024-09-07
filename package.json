@@ -32,7 +32,11 @@
   },
   "scripts": {
     "start": "node molnia.js",
-    "build": "bun build . --compile --outfile molnia",
+    "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
+    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/molnia.exe",
+    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/molnia",
+    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/molnia",
+    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/molnia",
     "test": "node --test",
     "test:mp4": "node molnia https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4"
   },
