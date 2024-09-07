@@ -1,6 +1,6 @@
 {
   "name": "molnia",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Fast and lightweight library for downloading files",
   "license": "AGPL-3.0",
@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "fastq": "^1.17.1",
-    "undici": "^6.19.4"
+    "undici": "^6.19.8"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
