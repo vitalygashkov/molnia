@@ -14,8 +14,7 @@ const download = async (url, options = {}) => {
   setClientOptions(options);
   const head = await fetchHead(url, options.headers);
   options.output = parseOutput(head.url, options.output);
-  if (head.isProgressive && head.contentLength > 5_000_000) {
-    // > 5MB
+  if (head.isProgressive && !head.isCompressed) {
     await downloadProgressive(
       head.url,
       options,
