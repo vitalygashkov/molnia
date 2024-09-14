@@ -6,11 +6,6 @@
 
 Utility for easy file downloading: fast, lightweight, cross-platform and flexible.
 
-<div align="left">
-  <span>English</span> •
-  <a href="https://github.com/vitalygashkov/molnia/tree/main/docs/README.ru.md">Pусский</a>
-</div>
-
 ## Description
 
 A file download utility written in JavaScript with minimal dependencies. It can be used both as a command line interface and as a library for use in third-party Node.js projects.
