@@ -37,6 +37,8 @@
     "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/molnia",
     "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/molnia",
     "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/molnia",
+    "lint": "eslint . && prettier --check .",
+    "fix": "eslint . --fix && prettier --write .",
     "test": "node --test",
     "test:mp4": "node molnia https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4"
   },
