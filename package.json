@@ -1,9 +1,28 @@
 {
   "name": "molnia",
   "version": "0.0.13",
-  "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
   "description": "Fast and lightweight library for downloading files",
-  "license": "AGPL-3.0",
+  "main": "molnia.js",
+  "types": "./types/molnia.d.ts",
+  "scripts": {
+    "start": "node molnia.js",
+    "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
+    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/molnia.exe",
+    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/molnia",
+    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/molnia",
+    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/molnia",
+    "lint": "eslint . && prettier --check .",
+    "fix": "eslint . --fix && prettier --write .",
+    "test": "npm run lint && node --test",
+    "test:mp4": "node molnia https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4"
+  },
+  "bin": {
+    "molnia": "molnia.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitalygashkov/molnia.git"
+  },
   "keywords": [
     "downloader",
     "lightweight",
@@ -12,46 +31,39 @@
     "curl",
     "wget"
   ],
-  "readmeFilename": "README.md",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vitalygashkov/molnia.git"
-  },
   "bugs": {
     "url": "https://github.com/vitalygashkov/molnia/issues",
     "email": "vitalygashkov@vk.com"
   },
-  "funding": {
-    "type": "individual",
-    "url": "https://boosty.to/vitalygashkov"
-  },
-  "main": "molnia.js",
-  "types": "./types/molnia.d.ts",
-  "bin": {
-    "molnia": "molnia.js"
-  },
-  "scripts": {
-    "start": "node molnia.js",
-    "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
-    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/molnia.exe",
-    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/molnia",
-    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/molnia",
-    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/molnia",
-    "test": "node --test",
-    "test:mp4": "node molnia https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4"
-  },
+  "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
+  "license": "AGPL-3.0",
+  "readmeFilename": "README.md",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://boosty.to/vitalygashkov"
+    },
+    {
+      "type": "patreon",
+      "url": "https://www.patreon.com/vitalygashkov"
+    }
+  ],
   "engines": {
-    "node": ">=20.0"
+    "node": "20 || 21 || 22"
   },
   "dependencies": {
     "fastq": "^1.17.1",
-    "undici": "^6.19.8"
+    "undici": "^6.20.1"
   },
   "devDependencies": {
-    "@types/node": "^22.5.5",
-    "@yao-pkg/pkg": "^5.14.0",
-    "eslint": "^8.57.0",
+    "@eslint/js": "^9.12.0",
+    "@types/node": "^22.7.5",
+    "@yao-pkg/pkg": "^5.15.0",
+    "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.11.0",
     "prettier": "^3.3.3",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   }
 }
