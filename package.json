@@ -7,10 +7,10 @@
   "scripts": {
     "start": "node molnia.js",
     "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
-    "build:win": "pkg . -t node20-win-x64 -o ./build/win-x64/molnia.exe",
-    "build:mac": "pkg . -t node20-macos-x64 -o ./build/macos-x64/molnia",
-    "build:mac:arm": "pkg . -t node20-macos-arm64 -o ./build/macos-arm64/molnia",
-    "build:linux": "pkg . -t node20-linux-x64 -o ./build/linux-x64/molnia",
+    "build:win": "pkg . -t node22-win-x64 -o ./build/win-x64/molnia.exe",
+    "build:mac": "pkg . -t node22-macos-x64 -o ./build/macos-x64/molnia",
+    "build:mac:arm": "pkg . -t node22-macos-arm64 -o ./build/macos-arm64/molnia",
+    "build:linux": "pkg . -t node22-linux-x64 -o ./build/linux-x64/molnia",
     "lint": "eslint . && prettier --check .",
     "fix": "eslint . --fix && prettier --write .",
     "test": "npm run lint && node --test",
@@ -53,16 +53,16 @@
   },
   "dependencies": {
     "fastq": "^1.17.1",
-    "undici": "^6.20.1"
+    "undici": "^6.21.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.13.0",
-    "@types/node": "^22.7.9",
-    "@yao-pkg/pkg": "^5.16.1",
-    "eslint": "^9.13.0",
+    "@eslint/js": "^9.14.0",
+    "@types/node": "^22.9.0",
+    "@yao-pkg/pkg": "^6.1.1",
+    "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "globals": "^15.11.0",
+    "globals": "^15.12.0",
     "prettier": "^3.3.3",
     "typescript": "^5.6.3"
   }
