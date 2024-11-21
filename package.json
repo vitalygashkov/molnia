@@ -4,6 +4,11 @@
   "description": "Fast and lightweight library for downloading files",
   "main": "molnia.js",
   "types": "./types/molnia.d.ts",
+  "files": [
+    "molnia.js",
+    "lib",
+    "types"
+  ],
   "scripts": {
     "start": "node molnia.js",
     "build": "npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
