@@ -3,7 +3,7 @@
 'use strict';
 
 const { parseOptions } = require('./lib/args');
-const { fetchHead, setClientOptions } = require('./lib/http');
+const { fetchHead, setClientOptions } = require('./lib/client');
 const { downloadProgressive } = require('./lib/progressive');
 const { save } = require('./lib/save');
 const { downloadSegments } = require('./lib/segments');
