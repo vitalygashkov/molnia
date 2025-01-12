@@ -1,6 +1,6 @@
 {
   "name": "molnia",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Fast and lightweight library for downloading files",
   "main": "molnia.js",
   "types": "./types/molnia.d.ts",
