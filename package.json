@@ -57,8 +57,8 @@
     "node": "20 || 21 || 22"
   },
   "dependencies": {
-    "fastq": "^1.17.1",
-    "undici": "^6.21.0"
+    "fastq": "^1.18.0",
+    "undici": "^7.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
