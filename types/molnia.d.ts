@@ -18,7 +18,7 @@ export type { Progress };
 export function download(url: string, options?: DownloadOptions): Promise<void>;
 
 export function downloadSegments(
-  urls: string[],
+  data: { url: string; headers?: Record<string, string> }[],
   options?: DownloadOptions,
 ): Promise<void>;
 
