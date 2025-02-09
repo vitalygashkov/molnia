@@ -20,7 +20,7 @@ jobs:
           check-latest: true
 
       - name: Install
-        run: npm ci
+        run: npm install
 
       - name: Get name and version from package.json
         run: |
