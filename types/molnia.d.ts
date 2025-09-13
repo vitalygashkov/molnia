@@ -21,8 +21,3 @@ export function downloadSegments(
   data: { url: string; headers?: Record<string, string> }[],
   options?: DownloadOptions,
 ): Promise<void>;
-
-export function setClientOptions(options: {
-  proxy?: string;
-  retry?: number;
-}): void;

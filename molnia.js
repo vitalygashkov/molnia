@@ -3,7 +3,7 @@
 'use strict';
 
 const { parseOptions } = require('./lib/args');
-const { fetchHead, setClientOptions } = require('./lib/client');
+const { fetchHead, createClient } = require('./lib/client');
 const { downloadProgressive } = require('./lib/progressive');
 const { save } = require('./lib/save');
 const { downloadSegments } = require('./lib/segments');
@@ -11,8 +11,8 @@ const { downloadSegments } = require('./lib/segments');
 const parseOutput = (url, output) => output || url?.split('/').at(-1);
 
 const download = async (url, options = {}) => {
-  setClientOptions(options);
-  const head = await fetchHead(url, options.headers);
+  options.dispatcher = createClient(options);
+  const head = await fetchHead(url, options);
   options.output = parseOutput(head.url, options.output);
   if (head.isProgressive && !head.isCompressed) {
     await downloadProgressive(
@@ -26,13 +26,12 @@ const download = async (url, options = {}) => {
       url: head.url,
       headers: options.headers,
       output: options.output,
+      dispatcher: options.dispatcher,
     });
   }
 };
 
 const options = parseOptions();
-
-if (options) setClientOptions(options);
 
 const start = async () => {
   for (const url of options.urls) await download(url, options);
@@ -40,4 +39,4 @@ const start = async () => {
 
 if (options) start();
 
-module.exports = { download, downloadSegments, setClientOptions };
+module.exports = { download, downloadSegments };
