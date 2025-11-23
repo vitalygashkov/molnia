@@ -27,6 +27,7 @@ const download = async (url, options = {}) => {
       headers: options.headers,
       output: options.output,
       dispatcher: options.dispatcher,
+      signal: options.signal,
     });
   }
 };

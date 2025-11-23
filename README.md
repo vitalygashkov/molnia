@@ -48,6 +48,8 @@ await download('https://proof.ovh.net/files/10Mb.dat', options);
 - **Concurrency**: chunk download queue with size limitations
 - **Retry** in case of request failure
 - **Proxy** support
+- **Resume downloads**: automatic resume of interrupted downloads
+- **Abortable API**: `AbortController` support to pause/stop downloads programmatically
 - **Multiple protocols** support: HTTP, HTTPS
 - **Minimal dependencies** and reduced code size
 - **Command-line interface**

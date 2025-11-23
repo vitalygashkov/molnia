@@ -8,6 +8,9 @@ export interface DownloadOptions {
   maxRetries?: number;
   maxRedirections?: number;
   proxy?: string;
+  signal?: AbortSignal;
+  resume?: boolean;
+  overwrite?: boolean;
   onChunkData?: (data: Buffer) => Buffer | void;
   onProgress?: (progress: Progress) => void;
   onError?: (error: Error, url?: string) => void;
