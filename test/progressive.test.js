@@ -9,7 +9,7 @@ test('progressive download resume with abort', async () => {
   const output = './test/progressive.dat';
 
   await rm(output, { force: true }).catch(() => null);
-  await rm(`${output}.molnia.json`, { force: true }).catch(() => null);
+  await rm(`${output}.part.json`, { force: true }).catch(() => null);
 
   const controller = new AbortController();
 
@@ -30,6 +30,6 @@ test('progressive download resume with abort', async () => {
   strictEqual(info && info.size, head.contentLength);
   console.log(head.contentLength);
 
-  const meta = await stat(`${output}.molnia.json`).catch(() => null);
+  const meta = await stat(`${output}.part.json`).catch(() => null);
   strictEqual(meta, null);
 });

@@ -84,7 +84,7 @@ const segments = [
 test('download segments', async () => {
   const output = './test/video.mp4';
   await rm(output, { force: true }).catch(() => null);
-  await rm(`${output}.molnia.segments.json`, { force: true }).catch(() => null);
+  await rm(`${output}.part.json`, { force: true }).catch(() => null);
 
   await downloadSegments(segments, { output });
   const info = await stat(output).catch(() => null);
@@ -94,7 +94,7 @@ test('download segments', async () => {
 test('download segments resume with abort', async () => {
   const output = './test/video_resume.mp4';
   await rm(output, { force: true }).catch(() => null);
-  await rm(`${output}.molnia.segments.json`, { force: true }).catch(() => null);
+  await rm(`${output}.part.json`, { force: true }).catch(() => null);
 
   const controller = new AbortController();
 
@@ -110,6 +110,6 @@ test('download segments resume with abort', async () => {
   const info = await stat(output).catch(() => null);
   strictEqual(info && info.size, 34884313);
 
-  const meta = await stat(`${output}.molnia.segments.json`).catch(() => null);
+  const meta = await stat(`${output}.part.json`).catch(() => null);
   strictEqual(meta, null);
 });
