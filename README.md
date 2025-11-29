@@ -53,3 +53,42 @@ await download('https://proof.ovh.net/files/10Mb.dat', options);
 - **Multiple protocols** support: HTTP, HTTPS
 - **Minimal dependencies** and reduced code size
 - **Command-line interface**
+
+## Resume & Abort
+
+molnia automatically resumes interrupted downloads using sidecar metadata files (`.part.json`).
+
+```js
+import { download, getDownloadProgress, cleanupDownload } from 'molnia';
+
+const controller = new AbortController();
+const output = 'C:\\Users\\John\\Downloads\\video.mp4';
+
+// Start download
+download('https://example.com/video.mp4', {
+  output,
+  signal: controller.signal,
+});
+
+// Later: pause download
+controller.abort();
+
+// Check progress of paused download
+const progress = await getDownloadProgress(output);
+if (progress) {
+  console.log(`${progress.percentComplete}% complete`);
+  // For progressive: progress.bytesDownloaded, progress.totalBytes
+  // For segmented: progress.segmentsCompleted, progress.segmentsTotal
+}
+
+// Resume download (just call download again)
+await download('https://example.com/video.mp4', { output });
+
+// Or cancel and clean up entirely
+await cleanupDownload(output);
+```
+
+CLI flags:
+
+- `--overwrite` / `-f`: ignore existing partial files/metadata and start a fresh download.
+- `--no-resume`: disable resume and behave like a fresh download every time.

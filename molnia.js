@@ -7,6 +7,7 @@ const { fetchHead, createClient } = require('./lib/client');
 const { downloadProgressive } = require('./lib/progressive');
 const { save } = require('./lib/save');
 const { downloadSegments } = require('./lib/segments');
+const { getDownloadProgress, cleanupDownload } = require('./lib/metadata');
 
 const parseOutput = (url, output) => output || url?.split('/').at(-1);
 
@@ -40,4 +41,9 @@ const start = async () => {
 
 if (options) start();
 
-module.exports = { download, downloadSegments };
+module.exports = {
+  download,
+  downloadSegments,
+  getDownloadProgress,
+  cleanupDownload,
+};
