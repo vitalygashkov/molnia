@@ -1,6 +1,6 @@
 {
   "name": "molnia",
-  "version": "0.2.0-alpha.1",
+  "version": "0.2.0-alpha.2",
   "description": "Fast and lightweight library for downloading files",
   "main": "molnia.js",
   "types": "./types/molnia.d.ts",
@@ -53,7 +53,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "fastq": "^1.19.1",
+    "fastq": "^1.20.1",
     "undici": "^7.16.0"
   },
   "devDependencies": {
