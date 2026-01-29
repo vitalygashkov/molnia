@@ -1,0 +1,60 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+
+    /* Emit */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "removeComments": false,
+    "importHelpers": true,
+    "downlevelIteration": true,
+
+    /* Interop Constraints */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+
+    /* Type Checking */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+
+    /* Completeness */
+    "skipLibCheck": true,
+
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./lib/*"]
+    }
+  },
+  "include": ["molnia.ts", "lib/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist", "build", "types"],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
+}

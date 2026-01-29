@@ -1,18 +1,28 @@
-'use strict';
-
-const fsp = require('node:fs/promises');
-const fs = require('node:fs');
-const { dirname } = require('node:path');
-const { DEFAULT_POOL_CONNECTIONS, createClient } = require('./client');
-const { createProgress } = require('./progress');
-const { save } = require('./save');
-const { createQueue } = require('./queue');
+import fsp from 'node:fs/promises';
+import fs from 'node:fs';
+import { dirname } from 'node:path';
+import { DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
+import { createProgress, type Progress } from './progress.js';
+import { save, type SaveOptions } from './save.js';
+import { createQueue, type QueueWorker } from './queue.js';
 
 const MAX_CHUNK_SIZE_MB = 2;
-const getChunkSize = (size) =>
+
+/**
+ * Calculate chunk size based on total size
+ * @param size - Total file size in bytes
+ * @returns Chunk size in bytes
+ */
+const getChunkSize = (size: number): number =>
   Math.floor(Math.min(size / 5, MAX_CHUNK_SIZE_MB * 1024 * 1024));
 
-const getRanges = (size, connections) => {
+/**
+ * Get byte ranges for chunked download
+ * @param size - Total file size in bytes
+ * @param connections - Number of concurrent connections
+ * @returns Array of [start, end] byte ranges
+ */
+const getRanges = (size: number, connections: number): [number, number][] => {
   let chunkSize = getChunkSize(size);
 
   let extraSize = 0;
@@ -25,7 +35,7 @@ const getRanges = (size, connections) => {
     ? Math.floor(size / chunkSize)
     : Math.ceil(size / chunkSize);
 
-  const chunks = Array(n);
+  const chunks = new Array(n);
   for (let i = 0; i < n; i += 1) {
     if (i < n - 1) chunks[i] = chunkSize;
     else chunks[i] = size - (n - 1) * chunkSize - extraSize;
@@ -39,7 +49,7 @@ const getRanges = (size, connections) => {
   }
 
   let sum = 0;
-  const ranges = [];
+  const ranges: [number, number][] = [];
   for (let i = 0; i < n; i += 1) {
     const chunk = chunks[i];
     ranges.push([sum, sum + chunk - 1]);
@@ -48,12 +58,32 @@ const getRanges = (size, connections) => {
   return ranges;
 };
 
-const downloadProgressive = async (
-  url,
-  options = {},
-  contentLength,
-  contentType,
-) => {
+/**
+ * Progressive download options interface
+ */
+export interface ProgressiveDownloadOptions {
+  output?: string;
+  headers?: Record<string, string>;
+  connections?: number;
+  onChunkData?: (data: Buffer | ArrayBuffer) => void;
+  onProgress?: (progress: Progress) => void;
+  onError?: (error: Error) => void;
+  dispatcher?: any;
+}
+
+/**
+ * Download a file progressively using multiple connections
+ * @param url - The URL to download from
+ * @param options - Download options
+ * @param contentLength - Total content length in bytes
+ * @param contentType - Content type string
+ */
+export const downloadProgressive = async (
+  url: string,
+  options: ProgressiveDownloadOptions = {},
+  contentLength: number,
+  contentType: string,
+): Promise<void> => {
   const {
     output,
     headers,
@@ -65,21 +95,26 @@ const downloadProgressive = async (
   const dispatcher = options.dispatcher ?? createClient(options);
   const ranges = getRanges(contentLength, connections);
 
+  if (!output) {
+    throw new Error('Output path is required');
+  }
+
   const dir = dirname(output);
   const dirExists = fs.existsSync(dir);
   if (!dirExists) await fsp.mkdir(dir, { recursive: true });
 
   if (fs.existsSync(output)) {
     // TODO: Resume download or rewrite
-    return console.log('File already exists. Download skipped.');
+    console.log('File already exists. Download skipped.');
+    return;
   }
 
-  const queue = createQueue(save, connections);
+  const queue = createQueue(save as QueueWorker<SaveOptions>, connections);
   const progress = createProgress(ranges.length);
 
   progress.setTotal(contentLength);
 
-  const onHeaders = (headers, url, statusCode) => {
+  const onHeaders = (headers: any, _url: string, statusCode: number) => {
     if (headers['content-type'] !== contentType) {
       const msg = `Content type mismatch. Received ${headers['content-type']} instead of ${contentType}. Status: ${statusCode}`;
       queue
@@ -97,7 +132,7 @@ const downloadProgressive = async (
   };
 
   for (let i = 0; i < ranges.length; i += 1) {
-    const saveOptions = {
+    const saveOptions: SaveOptions = {
       url,
       headers,
       dispatcher,
@@ -126,5 +161,3 @@ const downloadProgressive = async (
     );
   }
 };
-
-module.exports = { downloadProgressive };
