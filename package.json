@@ -2,13 +2,40 @@
   "name": "molnia",
   "version": "0.1.7",
   "description": "Fast and lightweight library for downloading files",
-  "main": "dist/molnia.js",
-  "types": "dist/molnia.d.ts",
+  "keywords": [
+    "curl",
+    "downloader",
+    "http",
+    "https",
+    "lightweight",
+    "wget"
+  ],
+  "bugs": {
+    "url": "https://github.com/vitalygashkov/molnia/issues",
+    "email": "vitalygashkov@vk.com"
+  },
+  "license": "MIT",
+  "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitalygashkov/molnia.git"
+  },
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://t.me/tribute/app?startapp=dqW2"
+    }
+  ],
+  "bin": {
+    "molnia": "dist/molnia.js"
+  },
   "files": [
     "dist",
     "molnia.ts",
     "lib/**/*.ts"
   ],
+  "main": "dist/molnia.js",
+  "types": "dist/molnia.d.ts",
   "scripts": {
     "start": "node molnia.ts",
     "build": "tsc",
@@ -17,61 +44,30 @@
     "build:mac": "pkg . -t node22-macos-x64 -o ./build/macos-x64/molnia",
     "build:mac:arm": "pkg . -t node22-macos-arm64 -o ./build/macos-arm64/molnia",
     "build:linux": "pkg . -t node22-linux-x64 -o ./build/linux-x64/molnia",
-    "lint": "eslint . && prettier --check .",
-    "fix": "eslint . --fix && prettier --write .",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test": "vitest",
     "test:mp4": "node molnia.ts https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },
-  "bin": {
-    "molnia": "dist/molnia.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vitalygashkov/molnia.git"
-  },
-  "keywords": [
-    "downloader",
-    "lightweight",
-    "http",
-    "https",
-    "curl",
-    "wget"
-  ],
-  "bugs": {
-    "url": "https://github.com/vitalygashkov/molnia/issues",
-    "email": "vitalygashkov@vk.com"
-  },
-  "author": "Vitaly Gashkov <vitalygashkov@vk.com>",
-  "license": "MIT",
-  "readmeFilename": "README.md",
-  "funding": [
-    {
-      "type": "individual",
-      "url": "https://t.me/tribute/app?startapp=dqW2"
-    }
-  ],
-  "engines": {
-    "node": ">=20"
-  },
   "dependencies": {
-    "fastq": "^1.19.1",
-    "undici": "^7.15.0"
+    "fastq": "^1.20.1",
+    "undici": "^7.19.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
     "@types/node": "^24.3.0",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
     "@yao-pkg/pkg": "^6.6.0",
-    "eslint": "^9.34.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.0",
-    "globals": "^16.3.0",
-    "prettier": "^3.6.2",
+    "oxfmt": "^0.27.0",
+    "oxlint": "^1.42.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.54.0",
     "vitest": "^4.0.18"
-  }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "readmeFilename": "README.md"
 }
