@@ -12,7 +12,7 @@
     /* Emit */
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "outDir": "./dist",
     "rootDir": ".",
     "removeComments": false,

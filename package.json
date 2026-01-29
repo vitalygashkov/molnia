@@ -27,31 +27,35 @@
     }
   ],
   "bin": {
-    "molnia": "dist/molnia.js"
+    "molnia": "dist/molnia.cjs"
   },
   "files": [
     "dist",
     "molnia.ts",
     "lib/**/*.ts"
   ],
-  "main": "dist/molnia.js",
-  "types": "dist/molnia.d.ts",
+  "main": "dist/molnia.cjs",
+  "module": "dist/molnia.mjs",
+  "types": "dist/molnia.d.cts",
+  "exports": {
+    "import": "./dist/molnia.mjs",
+    "require": "./dist/molnia.cjs"
+  },
   "scripts": {
     "start": "node molnia.ts",
-    "build": "tsc",
-    "build:prod": "tsc && npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
-    "build:win": "pkg . -t node22-win-x64 -o ./build/win-x64/molnia.exe",
-    "build:mac": "pkg . -t node22-macos-x64 -o ./build/macos-x64/molnia",
-    "build:mac:arm": "pkg . -t node22-macos-arm64 -o ./build/macos-arm64/molnia",
-    "build:linux": "pkg . -t node22-linux-x64 -o ./build/linux-x64/molnia",
+    "typecheck": "tsc --noEmit",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "test": "vitest",
     "test:mp4": "node molnia.ts https://cdn.bitmovin.com/content/assets/art-of-motion-dash-hls-progressive/MI201109210084_mpeg-4_hd_high_1080p25_10mbits.mp4",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run clean && npm run build"
+    "build": "tsdown molnia.ts --format cjs,esm --dts",
+    "build:prod": "tsc && npm run build:linux && npm run build:mac && npm run build:mac:arm && npm run build:win",
+    "build:win": "pkg . -t node22-win-x64 -o ./build/win-x64/molnia.exe",
+    "build:mac": "pkg . -t node22-macos-x64 -o ./build/macos-x64/molnia",
+    "build:mac:arm": "pkg . -t node22-macos-arm64 -o ./build/macos-arm64/molnia",
+    "build:linux": "pkg . -t node22-linux-x64 -o ./build/linux-x64/molnia"
   },
   "dependencies": {
     "fastq": "^1.20.1",
@@ -62,6 +66,7 @@
     "@yao-pkg/pkg": "^6.12.0",
     "oxfmt": "^0.27.0",
     "oxlint": "^1.42.0",
+    "tsdown": "^0.20.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
