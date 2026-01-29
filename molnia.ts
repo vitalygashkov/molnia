@@ -37,10 +37,7 @@ const parseOutput = (url: string, output?: string): string =>
  * @param url - The URL to download from
  * @param options - Download options
  */
-export const download = async (
-  url: string,
-  options: DownloadOptions = {},
-): Promise<void> => {
+export const download = async (url: string, options: DownloadOptions = {}): Promise<void> => {
   options.dispatcher = createClient(options);
   const head = await fetchHead(url, options);
   options.output = parseOutput(head.url, options.output);
@@ -50,12 +47,7 @@ export const download = async (
   }
 
   if (head.isProgressive && !head.isCompressed) {
-    await downloadProgressive(
-      head.url,
-      options,
-      head.contentLength || 0,
-      head.contentType || '',
-    );
+    await downloadProgressive(head.url, options, head.contentLength || 0, head.contentType || '');
   } else {
     await save({
       url: head.url,

@@ -118,8 +118,7 @@ export const createProgress = (count: number = 0): Progress => {
         const bytesLeft = total - bytesElapsed;
         const secondsLeft = Math.round(bytesLeft / state.speed.bps);
         const secondsText = formatSeconds(secondsLeft);
-        if (secondsLeft && isFinite(secondsLeft) && secondsText)
-          message += `, ${secondsText} left`;
+        if (secondsLeft && isFinite(secondsLeft) && secondsText) message += `, ${secondsText} left`;
       }
 
       return message;

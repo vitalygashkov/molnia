@@ -14,11 +14,7 @@ import { createQueue, type QueueWorker } from './queue.js';
  * @param index - Segment index
  * @returns Full path to segment file
  */
-const getSegmentOutput = (
-  _url: string,
-  tempPath: string,
-  index: number,
-): string => {
+const getSegmentOutput = (_url: string, tempPath: string, index: number): string => {
   const filename = `segment_${index}.part`;
   return path.join(tempPath, filename);
 };
@@ -73,8 +69,7 @@ export const downloadSegments = async (
   } = options;
 
   const tempDirInfo = await fsp.stat(tempDir).catch(() => null);
-  if (!tempDirInfo || !tempDirInfo.isDirectory())
-    await fsp.mkdir(tempDir, { recursive: true });
+  if (!tempDirInfo || !tempDirInfo.isDirectory()) await fsp.mkdir(tempDir, { recursive: true });
 
   if (!output) {
     throw new Error('Output path is required');
@@ -83,8 +78,7 @@ export const downloadSegments = async (
   const folder = path.parse(output).name;
   const tempPath = path.join(tempDir, folder);
   const tempPathInfo = await fsp.stat(tempPath).catch(() => null);
-  if (!tempPathInfo || !tempPathInfo.isDirectory())
-    await fsp.mkdir(tempPath, { recursive: true });
+  if (!tempPathInfo || !tempPathInfo.isDirectory()) await fsp.mkdir(tempPath, { recursive: true });
 
   const queue = createQueue(save as QueueWorker<SaveOptions>, connections);
   const progress = createProgress(data.length);
@@ -96,25 +90,20 @@ export const downloadSegments = async (
     else progress.log();
   };
 
-  const getErrorHandler =
-    (saveOptions: SaveOptions) => (error: any, comment?: string) => {
-      // https://github.com/nodejs/undici/issues/1923
-      // https://github.com/nodejs/undici/issues/3300
-      if (
-        error.code?.includes('UND_ERR_SOCKET') ||
-        error.code?.includes('ECONNRESET')
-      ) {
-        // Retry on socket or connection reset error
-        return queue.push(saveOptions);
-      } else {
-        onError?.(
-          error,
-          comment ||
-            `Queue task error. Code: ${error.code}. Message: ${error.message}`,
-        );
-      }
-      return undefined;
-    };
+  const getErrorHandler = (saveOptions: SaveOptions) => (error: any, comment?: string) => {
+    // https://github.com/nodejs/undici/issues/1923
+    // https://github.com/nodejs/undici/issues/3300
+    if (error.code?.includes('UND_ERR_SOCKET') || error.code?.includes('ECONNRESET')) {
+      // Retry on socket or connection reset error
+      return queue.push(saveOptions);
+    } else {
+      onError?.(
+        error,
+        comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`,
+      );
+    }
+    return undefined;
+  };
 
   const segmentOutputs: string[] = [];
   for (let i = 0; i < data.length; i += 1) {
@@ -150,14 +139,10 @@ export const downloadSegments = async (
 
   // Merge segments into one file
   const outputStream = fs.createWriteStream(output);
-  outputStream.on('error', (error) =>
-    onError?.(error, 'Output write stream error'),
-  );
+  outputStream.on('error', (error) => onError?.(error, 'Output write stream error'));
   for (const segmentOutput of segmentOutputs) {
     const segmentStream = fs.createReadStream(segmentOutput);
-    segmentStream.on('error', (error) =>
-      onError?.(error, 'Segment read stream error'),
-    );
+    segmentStream.on('error', (error) => onError?.(error, 'Segment read stream error'));
     segmentStream.pipe(outputStream, { end: false });
     await finished(segmentStream);
   }

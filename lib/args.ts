@@ -53,8 +53,7 @@ const options = {
   proxy: {
     type: 'string' as const,
     short: 'p' as const,
-    description:
-      'HTTP(S) proxy in WHATWG URL syntax, example: http://127.0.0.1:8888',
+    description: 'HTTP(S) proxy in WHATWG URL syntax, example: http://127.0.0.1:8888',
   },
   header: {
     type: 'string' as const,
@@ -140,8 +139,7 @@ export const parseOptions = (): ParsedOptions | undefined => {
       if (options[arg as keyof typeof options]) {
         const option = options[arg as keyof typeof options] as any;
         parsedValues[arg] =
-          option.parse?.(values[arg as keyof typeof values]) ||
-          values[arg as keyof typeof values];
+          option.parse?.(values[arg as keyof typeof values]) || values[arg as keyof typeof values];
       }
     }
 

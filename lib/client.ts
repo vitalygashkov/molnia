@@ -117,8 +117,7 @@ export const parseHead = (response: any): HeadResponse => {
   const isCompressed = !!encoding && ['gzip', 'deflate'].includes(encoding);
   const length = parseContentLength(headers);
   const acceptBytesRange =
-    headers.get('accept-ranges') === 'bytes' ||
-    headers.get('content-range')?.includes('bytes');
+    headers.get('accept-ranges') === 'bytes' || headers.get('content-range')?.includes('bytes');
   return {
     ...Object.fromEntries(headers.entries()),
     contentEncoding: encoding,
@@ -143,16 +142,13 @@ export const parseHead = (response: any): HeadResponse => {
  */
 export const fetchHead = async (
   input: string,
-  {
-    headers,
-    dispatcher,
-  }: { headers?: Record<string, string>; dispatcher?: Dispatcher } = {},
+  { headers, dispatcher }: { headers?: Record<string, string>; dispatcher?: Dispatcher } = {},
 ): Promise<HeadResponse> => {
   try {
     const response = await fetch(input, {
       method: 'GET',
       dispatcher,
-      headers: { ...(headers || {}), Range: 'bytes=0-0' },
+      headers: { ...headers, Range: 'bytes=0-0' },
     });
     return parseHead(response);
   } catch (e: any) {

@@ -11,8 +11,7 @@ export const sleep = (ms: number): Promise<void> =>
  * @param value - The camelCase string to convert
  * @returns The kebab-case string
  */
-export const toKebab = (value: string): string =>
-  value.replace(/[A-Z]/g, '-$&').toLowerCase();
+export const toKebab = (value: string): string => value.replace(/[A-Z]/g, '-$&').toLowerCase();
 
 /**
  * Convert all keys in an object from camelCase to kebab-case

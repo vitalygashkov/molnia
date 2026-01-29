@@ -31,11 +31,9 @@ const getRanges = (size: number, connections: number): [number, number][] => {
     extraSize = size % connections;
   }
 
-  const n = extraSize
-    ? Math.floor(size / chunkSize)
-    : Math.ceil(size / chunkSize);
+  const n = extraSize ? Math.floor(size / chunkSize) : Math.ceil(size / chunkSize);
 
-  const chunks = new Array(n);
+  const chunks: any[] = Array.from({ length: n });
   for (let i = 0; i < n; i += 1) {
     if (i < n - 1) chunks[i] = chunkSize;
     else chunks[i] = size - (n - 1) * chunkSize - extraSize;
@@ -119,11 +117,7 @@ export const downloadProgressive = async (
       const msg = `Content type mismatch. Received ${headers['content-type']} instead of ${contentType}. Status: ${statusCode}`;
       queue
         .killAndDrain()
-        .then(() =>
-          onError?.(
-            new TypeError(msg, { cause: new Error(JSON.stringify(headers)) }),
-          ),
-        );
+        .then(() => onError?.(new TypeError(msg, { cause: new Error(JSON.stringify(headers)) })));
     }
     const size = parseInt(headers['content-length']);
     progress.increase(size);
@@ -154,10 +148,6 @@ export const downloadProgressive = async (
   const expectedSize = contentLength;
 
   if (actualSize !== expectedSize) {
-    onError?.(
-      new Error(
-        `Actual size ${actualSize} doesn't match expected size ${expectedSize}`,
-      ),
-    );
+    onError?.(new Error(`Actual size ${actualSize} doesn't match expected size ${expectedSize}`));
   }
 };
