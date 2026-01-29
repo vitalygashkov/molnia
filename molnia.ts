@@ -20,7 +20,7 @@ export interface DownloadOptions {
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: any) => void;
   onError?: (error: Error, url?: string) => void;
-  dispatcher?: any;
+  client?: any;
 }
 
 /**
@@ -29,8 +29,7 @@ export interface DownloadOptions {
  * @param output - Optional output filename
  * @returns The output filename
  */
-const parseOutput = (url: string, output?: string): string =>
-  output || url?.split('/').at(-1) || 'download';
+const parseOutput = (url: string, output?: string): string => output || url?.split('/').at(-1) || 'download';
 
 /**
  * Download a file from a URL
@@ -38,8 +37,9 @@ const parseOutput = (url: string, output?: string): string =>
  * @param options - Download options
  */
 export const download = async (url: string, options: DownloadOptions = {}): Promise<void> => {
-  options.dispatcher = createClient(options);
-  const head = await fetchHead(url, options);
+  const client = createClient(options);
+  options.client = client;
+  const head = await fetchHead(url, { headers: options.headers, client });
   options.output = parseOutput(head.url, options.output);
 
   if (!options.output) {
@@ -53,7 +53,7 @@ export const download = async (url: string, options: DownloadOptions = {}): Prom
       url: head.url,
       headers: options.headers,
       output: options.output,
-      dispatcher: options.dispatcher,
+      client: options.client,
     });
   }
 };

@@ -1,14 +1,5 @@
-import {
-  fetch,
-  Agent,
-  ProxyAgent,
-  RetryAgent,
-  interceptors,
-  type Dispatcher,
-  type Headers,
-} from 'undici';
-
-const { redirect } = interceptors;
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import ky from 'ky';
 
 /**
  * Error codes that should trigger a retry
@@ -24,9 +15,6 @@ const RETRY_ERROR_CODES = [
   'ETIMEDOUT',
   'EPIPE',
   'ERR_ASSERTION',
-
-  'UND_ERR_SOCKET',
-  'UND_ERR_CONNECT_TIMEOUT',
 ] as const;
 
 export const DEFAULT_MAX_RETRIES = 5;
@@ -34,8 +22,6 @@ export const DEFAULT_MAX_REDIRECTIONS = 5;
 export const DEFAULT_POOL_CONNECTIONS = 5;
 
 const DEFAULT_CONNECT_TIMEOUT = 300e3; // 5 minutes
-const DEFAULT_KEEP_ALIVE_TIMEOUT = 60000; // 60 seconds
-const DEFAULT_KEEP_ALIVE_MAX_TIMEOUT = 300000; // 5 minutes
 
 /**
  * Client options interface
@@ -61,36 +47,98 @@ export interface HeadResponse {
 }
 
 /**
- * Create an HTTP client with retry and redirect support
- * @param options - Client configuration options
- * @returns A dispatcher instance
+ * Custom HTTP client wrapper that supports proxy and retry logic
  */
-export const createClient = (options: ClientOptions = {}): Dispatcher => {
-  const agentOptions = {
-    connections: options.connections ?? DEFAULT_POOL_CONNECTIONS,
-    connectTimeout: DEFAULT_CONNECT_TIMEOUT,
-    keepAliveTimeout: DEFAULT_KEEP_ALIVE_TIMEOUT,
-    keepAliveMaxTimeout: DEFAULT_KEEP_ALIVE_MAX_TIMEOUT,
-    connect: {
-      autoSelectFamilyAttemptTimeout: 500,
-      rejectUnauthorized: false,
-    },
+export interface HttpClient {
+  get: (url: string, options?: { headers?: Record<string, string> }) => Promise<Response>;
+  head: (url: string, options?: { headers?: Record<string, string> }) => Promise<Response>;
+  createStream: (url: string, options?: { method?: string; headers?: Record<string, string> }) => Promise<Response>;
+}
+
+/**
+ * Create a retry wrapper with exponential backoff
+ * @param fn - The function to retry
+ * @param maxRetries - Maximum number of retries
+ * @returns The result of the function
+ */
+const withRetry = async <T>(fn: () => Promise<T>, maxRetries: number): Promise<T> => {
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+
+      // Check if error code is retryable
+      const errorCode = error.code || error.message;
+      const isRetryable = RETRY_ERROR_CODES.some((code) => errorCode?.includes(code));
+
+      if (!isRetryable || attempt === maxRetries) {
+        throw error;
+      }
+
+      // Exponential backoff: 100ms, 200ms, 400ms, 800ms, etc.
+      const delay = Math.min(100 * 2 ** attempt, 30000);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+};
+
+/**
+ * Create an HTTP client with retry and proxy support
+ * @param options - Client configuration options
+ * @returns A configured HTTP client instance
+ */
+export const createClient = (options: ClientOptions = {}): HttpClient => {
+  const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
+
+  // Create proxy agent if proxy is specified
+  const agent = options.proxy ? new HttpsProxyAgent(options.proxy) : undefined;
+
+  // Custom fetch function that handles proxy
+  const customFetch = (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+    if (agent) {
+      // Node.js fetch supports dispatcher/agent via undici
+      return fetch(input, {
+        ...init,
+        // @ts-ignore - Node.js fetch supports dispatcher option
+        dispatcher: agent,
+      });
+    }
+    return fetch(input, init);
   };
 
-  const agent = (
-    options.proxy
-      ? new ProxyAgent({ uri: options.proxy, ...agentOptions })
-      : new Agent(agentOptions)
-  ).compose(
-    redirect({
-      maxRedirections: DEFAULT_MAX_REDIRECTIONS,
-    } as any),
-  );
-
-  return new RetryAgent(agent, {
-    maxRetries: options.maxRetries ?? DEFAULT_MAX_RETRIES,
-    errorCodes: [...RETRY_ERROR_CODES],
+  // Create ky instance with custom fetch
+  const client = ky.create({
+    fetch: customFetch,
+    timeout: DEFAULT_CONNECT_TIMEOUT,
+    retry: {
+      limit: 0, // We handle retries manually for better control
+    },
+    redirect: 'follow',
+    headers: {
+      'Accept-Encoding': 'gzip, deflate',
+    },
   });
+
+  return {
+    get: (url: string, opts?: { headers?: Record<string, string> }) =>
+      withRetry(() => client.get(url, opts).then((res) => res as unknown as Response), maxRetries),
+    head: (url: string, opts?: { headers?: Record<string, string> }) =>
+      withRetry(() => client.head(url, opts).then((res) => res as unknown as Response), maxRetries),
+    createStream: (url: string, opts?: { method?: string; headers?: Record<string, string> }) =>
+      withRetry(() => {
+        return client
+          .get(url, {
+            ...opts,
+            redirect: 'follow',
+          })
+          .then((res) => res as unknown as Response);
+      }, maxRetries),
+  };
 };
 
 /**
@@ -110,14 +158,14 @@ const parseContentLength = (headers: Headers): number | null => {
  * @param response - The HTTP response
  * @returns A structured head response object
  */
-export const parseHead = (response: any): HeadResponse => {
+export const parseHead = (response: Response): HeadResponse => {
   const { headers, url } = response;
   const encoding = headers.get('content-encoding') || '';
   const type = headers.get('content-type') || '';
   const isCompressed = !!encoding && ['gzip', 'deflate'].includes(encoding);
   const length = parseContentLength(headers);
   const acceptBytesRange =
-    headers.get('accept-ranges') === 'bytes' || headers.get('content-range')?.includes('bytes');
+    headers.get('accept-ranges') === 'bytes' || !!headers.get('content-range')?.includes('bytes');
   return {
     ...Object.fromEntries(headers.entries()),
     contentEncoding: encoding,
@@ -126,10 +174,7 @@ export const parseHead = (response: any): HeadResponse => {
     acceptBytesRange,
     isCompressed,
     isProgressive:
-      (length && acceptBytesRange) ||
-      type.includes('video') ||
-      type.includes('audio') ||
-      type.includes('zip'),
+      (length && acceptBytesRange) || type.includes('video') || type.includes('audio') || type.includes('zip'),
     url,
   };
 };
@@ -142,12 +187,12 @@ export const parseHead = (response: any): HeadResponse => {
  */
 export const fetchHead = async (
   input: string,
-  { headers, dispatcher }: { headers?: Record<string, string>; dispatcher?: Dispatcher } = {},
+  { headers, client }: { headers?: Record<string, string>; client?: HttpClient } = {},
 ): Promise<HeadResponse> => {
+  const httpClient = client ?? createClient();
+
   try {
-    const response = await fetch(input, {
-      method: 'GET',
-      dispatcher,
+    const response = await httpClient.get(input, {
       headers: { ...headers, Range: 'bytes=0-0' },
     });
     return parseHead(response);
