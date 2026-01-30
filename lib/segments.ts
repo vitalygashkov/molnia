@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { createProgress, type Progress } from './progress.js';
 import { save, type SaveOptions } from './save.js';
-import { DEFAULT_POOL_CONNECTIONS, createClient, type HttpClient } from './client.js';
+import { ClientOptions, DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
 import { createQueue, type QueueWorker } from './queue.js';
 
 /**
@@ -37,15 +37,13 @@ export interface SegmentData {
 /**
  * Segments download options interface
  */
-export interface SegmentsDownloadOptions {
+export interface SegmentsDownloadOptions extends ClientOptions {
   output?: string;
   tempDir?: string;
   headers?: Record<string, string>;
-  connections?: number;
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: Progress) => void;
   onError?: (error: Error, comment?: string) => void;
-  client?: HttpClient;
 }
 
 /**
@@ -54,7 +52,7 @@ export interface SegmentsDownloadOptions {
  * @param options - Download options
  */
 export const downloadSegments = async (data: SegmentData[], options: SegmentsDownloadOptions = {}): Promise<void> => {
-  const client = options.client ?? createClient(options);
+  const client = createClient(options);
   const {
     output,
     tempDir = process.cwd(),

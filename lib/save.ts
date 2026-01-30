@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import { setTimeout } from 'node:timers/promises';
 import { finished } from 'node:stream/promises';
 import { Readable } from 'node:stream';
-import type { HttpClient } from './client.js';
+import ky, { type KyInstance } from 'ky';
 
 /**
  * Range information
@@ -22,7 +22,7 @@ export interface SaveOptions {
   headers?: Record<string, string>;
   range?: [number, number];
   output: string;
-  client?: HttpClient;
+  client?: KyInstance;
   onHeaders?: (headers: any, url: string, statusCode: number) => void;
   onData?: (data: Buffer | ArrayBuffer) => void;
   onError?: (error: Error, comment?: string) => void;
@@ -60,7 +60,7 @@ const webStreamToNode = (webStream: ReadableStream<Uint8Array>): Readable => {
  * @returns Promise that resolves when the file is saved
  */
 export const save = async (options: SaveOptions): Promise<void> => {
-  const { url, method = 'GET', headers = {}, range, output, client, onHeaders, onData, onError } = options;
+  const { url, method = 'GET', headers = {}, range, output, client = ky, onHeaders, onData, onError } = options;
 
   if (!('user-agent' in headers) && !('User-Agent' in headers)) {
     headers['user-agent'] =
@@ -70,11 +70,7 @@ export const save = async (options: SaveOptions): Promise<void> => {
   const { start } = withRange({ headers }, range);
 
   try {
-    // Use client if provided, otherwise use native fetch
-    const response = client
-      ? await client.createStream(url, { method, headers })
-      : await fetch(url, { method, headers, redirect: 'follow' });
-
+    const response = await client.get(url, { method, headers, redirect: 'follow' });
     const status = response.status;
 
     // Handle redirect manually if needed (though fetch follows redirects by default)

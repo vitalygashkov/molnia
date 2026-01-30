@@ -1,4 +1,4 @@
-import ky from 'ky';
+import ky, { type KyInstance } from 'ky';
 import { createFetchWithProxy } from './proxy.js';
 
 export const DEFAULT_MAX_RETRIES = 5;
@@ -32,20 +32,11 @@ export interface HeadResponse {
 }
 
 /**
- * Custom HTTP client wrapper that supports proxy and retry logic
- */
-export interface HttpClient {
-  get: (url: string, options?: { headers?: Record<string, string> }) => Promise<Response>;
-  head: (url: string, options?: { headers?: Record<string, string> }) => Promise<Response>;
-  createStream: (url: string, options?: { method?: string; headers?: Record<string, string> }) => Promise<Response>;
-}
-
-/**
  * Create an HTTP client with retry and proxy support
  * @param options - Client configuration options
  * @returns A configured HTTP client instance
  */
-export const createClient = (options: ClientOptions = {}): HttpClient => {
+export const createClient = (options: ClientOptions = {}) => {
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
   // Create runtime-aware proxy fetch function
@@ -69,19 +60,7 @@ export const createClient = (options: ClientOptions = {}): HttpClient => {
     },
   });
 
-  return {
-    get: (url: string, opts?: { headers?: Record<string, string> }) =>
-      client.get(url, opts).then((res) => res as unknown as Response),
-    head: (url: string, opts?: { headers?: Record<string, string> }) =>
-      client.head(url, opts).then((res) => res as unknown as Response),
-    createStream: (url: string, opts?: { method?: string; headers?: Record<string, string> }) =>
-      client
-        .get(url, {
-          ...opts,
-          redirect: 'follow',
-        })
-        .then((res) => res as unknown as Response),
-  };
+  return client;
 };
 
 /**
@@ -130,13 +109,12 @@ export const parseHead = (response: Response): HeadResponse => {
  */
 export const fetchHead = async (
   input: string,
-  { headers, client }: { headers?: Record<string, string>; client?: HttpClient } = {},
+  options: { headers?: Record<string, string>; client?: KyInstance } = {},
 ): Promise<HeadResponse> => {
-  const httpClient = client ?? createClient();
-
+  const client = options.client ?? createClient();
   try {
-    const response = await httpClient.get(input, {
-      headers: { ...headers, Range: 'bytes=0-0' },
+    const response = await client.get(input, {
+      headers: { ...options.headers, Range: 'bytes=0-0' },
     });
     return parseHead(response);
   } catch (e: any) {
