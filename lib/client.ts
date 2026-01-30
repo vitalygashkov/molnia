@@ -14,6 +14,7 @@ export interface ClientOptions {
   connections?: number;
   maxRetries?: number;
   proxy?: string;
+  fetch?: typeof fetch;
 }
 
 /**
@@ -48,7 +49,8 @@ export const createClient = (options: ClientOptions = {}): HttpClient => {
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
   // Create runtime-aware proxy fetch function
-  const customFetch = options.proxy ? createFetchWithProxy(options) : fetch;
+  const { proxy } = options;
+  const customFetch = proxy ? createFetchWithProxy({ proxy, fetch: options.fetch }) : (options.fetch ?? fetch);
 
   // Create ky instance with custom fetch and built-in retry
   const client = ky.create({
@@ -59,11 +61,11 @@ export const createClient = (options: ClientOptions = {}): HttpClient => {
       methods: ['get', 'head'],
       statusCodes: [408, 413, 429, 500, 502, 503, 504],
       backoffLimit: 30000,
-      delay: (attemptCount) => Math.min(100 * 2 ** (attemptCount - 1), 30000),
     },
     redirect: 'follow',
     headers: {
-      'Accept-Encoding': 'gzip, deflate',
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
     },
   });
 

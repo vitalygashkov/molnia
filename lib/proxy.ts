@@ -17,27 +17,22 @@ export const getRuntime = () => {
   return 'unknown';
 };
 
-type FetchOptions = { proxy?: string };
 type FetchFn = typeof fetch;
+type FetchOptions = { proxy: string; fetch?: FetchFn };
+
+const withCustomFetchOptions = (options: Record<string, unknown>, customFetch?: FetchFn): FetchFn => {
+  return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    return (customFetch ?? fetch)(input, { ...init, ...options });
+  };
+};
 
 /**
  * Create a Node.js proxy fetch using https-proxy-agent
  * Uses the dispatcher option which is Node.js specific
  */
 const createNodeProxyFetch = (options: FetchOptions): FetchFn => {
-  if (!options.proxy) {
-    return fetch;
-  }
-
-  const agent = new HttpsProxyAgent(options.proxy);
-
-  return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    return fetch(input, {
-      ...init,
-      // @ts-ignore - Node.js fetch supports dispatcher option via undici
-      dispatcher: agent,
-    });
-  };
+  const dispatcher = new HttpsProxyAgent(options.proxy);
+  return withCustomFetchOptions({ dispatcher }, options.fetch);
 };
 
 /**
@@ -45,17 +40,7 @@ const createNodeProxyFetch = (options: FetchOptions): FetchFn => {
  * Bun v1.1.8+ supports the proxy option directly in fetch
  */
 const createBunProxyFetch = (options: FetchOptions): FetchFn => {
-  if (!options.proxy) {
-    return fetch;
-  }
-
-  return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    return fetch(input, {
-      ...init,
-      // @ts-ignore - Bun fetch supports proxy option
-      proxy: options.proxy,
-    });
-  };
+  return withCustomFetchOptions({ proxy: options.proxy }, options.fetch);
 };
 
 /**
@@ -63,39 +48,25 @@ const createBunProxyFetch = (options: FetchOptions): FetchFn => {
  * Deno uses a client-based approach with proxy configuration
  */
 const createDenoProxyFetch = (options: FetchOptions): FetchFn => {
-  if (!options.proxy) {
-    return fetch;
-  }
-
-  // Create HTTP client with proxy configuration
-  const denoHttpClient = (globalThis as any).Deno.createHttpClient({
-    proxy: { url: options.proxy },
-  });
-
-  return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    return fetch(input, {
-      ...init,
-      // @ts-ignore - Deno fetch supports client option
-      client: denoHttpClient,
-    });
-  };
+  const client = (globalThis as any).Deno.createHttpClient({ proxy: { url: options.proxy } });
+  return withCustomFetchOptions({ client }, options.fetch);
 };
 
 /**
  * Create a proxy-aware fetch function based on the current runtime
  * @param options.proxy - Proxy URL in WHATWG format, e.g., http://127.0.0.1:8888
  */
-export const createFetchWithProxy = ({ proxy }: FetchOptions): FetchFn => {
+export const createFetchWithProxy = (options: FetchOptions): FetchFn => {
   const runtime = getRuntime();
-
+  if (!options.proxy) return options.fetch ?? fetch;
   switch (runtime) {
     case 'bun':
-      return createBunProxyFetch({ proxy });
+      return createBunProxyFetch(options);
     case 'deno':
-      return createDenoProxyFetch({ proxy });
+      return createDenoProxyFetch(options);
     case 'node':
-      return createNodeProxyFetch({ proxy });
+      return createNodeProxyFetch(options);
     default:
-      return fetch;
+      return options.fetch ?? fetch;
   }
 };

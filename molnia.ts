@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { parseOptions } from './lib/args.js';
-import { fetchHead, createClient } from './lib/client.js';
+import { fetchHead, createClient, ClientOptions } from './lib/client.js';
 import { downloadProgressive } from './lib/progressive.js';
 import { save } from './lib/save.js';
 import { downloadSegments } from './lib/segments.js';
@@ -9,18 +9,14 @@ import { downloadSegments } from './lib/segments.js';
 /**
  * Download options interface
  */
-export interface DownloadOptions {
+export interface DownloadOptions extends ClientOptions {
   output?: string;
   tempDir?: string;
   headers?: Record<string, string>;
-  connections?: number;
-  maxRetries?: number;
   maxRedirections?: number;
-  proxy?: string;
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: any) => void;
   onError?: (error: Error, url?: string) => void;
-  client?: any;
 }
 
 /**
@@ -38,7 +34,6 @@ const parseOutput = (url: string, output?: string): string => output || url?.spl
  */
 export const download = async (url: string, options: DownloadOptions = {}): Promise<void> => {
   const client = createClient(options);
-  options.client = client;
   const head = await fetchHead(url, { headers: options.headers, client });
   options.output = parseOutput(head.url, options.output);
 
@@ -53,7 +48,7 @@ export const download = async (url: string, options: DownloadOptions = {}): Prom
       url: head.url,
       headers: options.headers,
       output: options.output,
-      client: options.client,
+      client: client,
     });
   }
 };
