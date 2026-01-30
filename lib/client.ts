@@ -1,5 +1,5 @@
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import ky from 'ky';
+import { createFetchWithProxy } from './proxy.js';
 
 export const DEFAULT_MAX_RETRIES = 5;
 export const DEFAULT_MAX_REDIRECTIONS = 5;
@@ -47,21 +47,8 @@ export interface HttpClient {
 export const createClient = (options: ClientOptions = {}): HttpClient => {
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
-  // Create proxy agent if proxy is specified
-  const agent = options.proxy ? new HttpsProxyAgent(options.proxy) : undefined;
-
-  // Custom fetch function that handles proxy
-  const customFetch = (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
-    if (agent) {
-      // Node.js fetch supports dispatcher/agent via undici
-      return fetch(input, {
-        ...init,
-        // @ts-ignore - Node.js fetch supports dispatcher option
-        dispatcher: agent,
-      });
-    }
-    return fetch(input, init);
-  };
+  // Create runtime-aware proxy fetch function
+  const customFetch = options.proxy ? createFetchWithProxy(options) : fetch;
 
   // Create ky instance with custom fetch and built-in retry
   const client = ky.create({
@@ -121,7 +108,7 @@ export const parseHead = (response: Response): HeadResponse => {
   const acceptBytesRange =
     headers.get('accept-ranges') === 'bytes' || !!headers.get('content-range')?.includes('bytes');
   return {
-    ...Object.fromEntries(headers.entries()),
+    ...Object.fromEntries((headers as any).entries()),
     contentEncoding: encoding,
     contentType: type,
     contentLength: length,

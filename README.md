@@ -8,13 +8,13 @@ Utility for easy file downloading: fast, lightweight, cross-platform and flexibl
 
 ## Description
 
-A file download utility written in JavaScript with minimal dependencies. It can be used both as a command line interface and as a library for use in third-party Node.js projects.
+A file download utility written in TypeScript with minimal dependencies. It can be used both as a command line interface and as a library.
 
 ## Quick start
 
 ### Command-line interface
 
-Download and install [Node.js](https://nodejs.org/en/download/). Run app:
+Download and install [Node.js](https://nodejs.org/en/download/) (or [Bun](https://bun.sh/), [Deno](https://deno.land/)). Run app:
 
 ```
 npx molnia [options] url1 [url2] [url...]
@@ -47,7 +47,8 @@ await download('https://proof.ovh.net/files/10Mb.dat', options);
 
 - **Concurrency**: chunk download queue with size limitations
 - **Retry** in case of request failure
-- **Proxy** support
+- **Proxy** support (HTTP/HTTPS) across Node.js, Bun, and Deno
 - **Multiple protocols** support: HTTP, HTTPS
+- **Cross-runtime**: Works with Node.js, Bun, and Deno
 - **Minimal dependencies** and reduced code size
 - **Command-line interface**
