@@ -1,22 +1,6 @@
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import ky from 'ky';
 
-/**
- * Error codes that should trigger a retry
- */
-const RETRY_ERROR_CODES = [
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'ENOTFOUND',
-  'ENETDOWN',
-  'ENETUNREACH',
-  'EHOSTDOWN',
-  'EHOSTUNREACH',
-  'ETIMEDOUT',
-  'EPIPE',
-  'ERR_ASSERTION',
-] as const;
-
 export const DEFAULT_MAX_RETRIES = 5;
 export const DEFAULT_MAX_REDIRECTIONS = 5;
 export const DEFAULT_POOL_CONNECTIONS = 5;
@@ -56,38 +40,6 @@ export interface HttpClient {
 }
 
 /**
- * Create a retry wrapper with exponential backoff
- * @param fn - The function to retry
- * @param maxRetries - Maximum number of retries
- * @returns The result of the function
- */
-const withRetry = async <T>(fn: () => Promise<T>, maxRetries: number): Promise<T> => {
-  let lastError: Error | undefined;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error: any) {
-      lastError = error;
-
-      // Check if error code is retryable
-      const errorCode = error.code || error.message;
-      const isRetryable = RETRY_ERROR_CODES.some((code) => errorCode?.includes(code));
-
-      if (!isRetryable || attempt === maxRetries) {
-        throw error;
-      }
-
-      // Exponential backoff: 100ms, 200ms, 400ms, 800ms, etc.
-      const delay = Math.min(100 * 2 ** attempt, 30000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-  }
-
-  throw lastError;
-};
-
-/**
  * Create an HTTP client with retry and proxy support
  * @param options - Client configuration options
  * @returns A configured HTTP client instance
@@ -111,12 +63,16 @@ export const createClient = (options: ClientOptions = {}): HttpClient => {
     return fetch(input, init);
   };
 
-  // Create ky instance with custom fetch
+  // Create ky instance with custom fetch and built-in retry
   const client = ky.create({
     fetch: customFetch,
     timeout: DEFAULT_CONNECT_TIMEOUT,
     retry: {
-      limit: 0, // We handle retries manually for better control
+      limit: maxRetries,
+      methods: ['get', 'head'],
+      statusCodes: [408, 413, 429, 500, 502, 503, 504],
+      backoffLimit: 30000,
+      delay: (attemptCount) => Math.min(100 * 2 ** (attemptCount - 1), 30000),
     },
     redirect: 'follow',
     headers: {
@@ -126,18 +82,16 @@ export const createClient = (options: ClientOptions = {}): HttpClient => {
 
   return {
     get: (url: string, opts?: { headers?: Record<string, string> }) =>
-      withRetry(() => client.get(url, opts).then((res) => res as unknown as Response), maxRetries),
+      client.get(url, opts).then((res) => res as unknown as Response),
     head: (url: string, opts?: { headers?: Record<string, string> }) =>
-      withRetry(() => client.head(url, opts).then((res) => res as unknown as Response), maxRetries),
+      client.head(url, opts).then((res) => res as unknown as Response),
     createStream: (url: string, opts?: { method?: string; headers?: Record<string, string> }) =>
-      withRetry(() => {
-        return client
-          .get(url, {
-            ...opts,
-            redirect: 'follow',
-          })
-          .then((res) => res as unknown as Response);
-      }, maxRetries),
+      client
+        .get(url, {
+          ...opts,
+          redirect: 'follow',
+        })
+        .then((res) => res as unknown as Response),
   };
 };
 
