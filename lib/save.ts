@@ -1,7 +1,8 @@
 import fs from 'node:fs';
 import { setTimeout } from 'node:timers/promises';
 import { finished } from 'node:stream/promises';
-import { request, type Dispatcher } from 'undici';
+import { Readable } from 'node:stream';
+import ky, { type KyInstance } from 'ky';
 
 /**
  * Range information
@@ -21,7 +22,7 @@ export interface SaveOptions {
   headers?: Record<string, string>;
   range?: [number, number];
   output: string;
-  dispatcher?: Dispatcher;
+  client?: KyInstance;
   onHeaders?: (headers: any, url: string, statusCode: number) => void;
   onData?: (data: Buffer | ArrayBuffer) => void;
   onError?: (error: Error, comment?: string) => void;
@@ -45,81 +46,94 @@ const withRange = (options: any, range?: [number, number]): RangeInfo => {
 };
 
 /**
+ * Convert a Web ReadableStream to a Node.js Readable stream
+ * @param webStream - Web API ReadableStream
+ * @returns Node.js Readable stream
+ */
+const webStreamToNode = (webStream: ReadableStream<Uint8Array>): Readable => {
+  return Readable.fromWeb(webStream as any);
+};
+
+/**
  * Save a file from a URL
  * @param options - Save options
  * @returns Promise that resolves when the file is saved
  */
 export const save = async (options: SaveOptions): Promise<void> => {
-  const {
-    url,
-    method = 'GET',
-    headers = {},
-    range,
-    output,
-    dispatcher,
-    onHeaders,
-    onData,
-    onError,
-  } = options;
+  const { url, method = 'GET', headers = {}, range, output, client = ky, onHeaders, onData, onError } = options;
 
   if (!('user-agent' in headers) && !('User-Agent' in headers)) {
     headers['user-agent'] =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
   }
 
-  const requestOptions = { method, headers, dispatcher };
-  const { start } = withRange(requestOptions, range);
-  const response = await request(url, requestOptions).catch((error) => error);
+  const { start } = withRange({ headers }, range);
 
-  if (response instanceof Error) {
-    return onError?.(response, 'Request error');
-  }
+  try {
+    const response = await client.get(url, { method, headers, redirect: 'follow' });
+    const status = response.status;
 
-  const status = response?.statusCode;
-
-  if (status === 301) {
-    const location = response.headers.location;
-    if (location) {
-      return save({
-        url: location,
-        method,
-        headers,
-        range,
-        output,
-        dispatcher,
-        onHeaders,
-        onData,
-        onError,
-      });
+    // Handle redirect manually if needed (though fetch follows redirects by default)
+    if (status === 301 || status === 302 || status === 307 || status === 308) {
+      const location = response.headers.get('location');
+      if (location) {
+        return save({
+          url: location,
+          method,
+          headers,
+          range,
+          output,
+          client,
+          onHeaders,
+          onData,
+          onError,
+        });
+      }
     }
-  }
 
-  onHeaders?.(response.headers, url, response.statusCode);
+    // Convert headers to plain object for callback
+    const headersObj: Record<string, string> = {};
+    response.headers.forEach((value, key) => {
+      headersObj[key] = value;
+    });
 
-  if (onData) {
-    onData?.(await response.body.arrayBuffer());
-  }
+    onHeaders?.(headersObj, url, status);
 
-  if (status && status >= 400) {
-    return onError?.(new Error(`Request failed: ${status}`), `URL: ${url}`);
-  }
-
-  const streamOptions: { flags: string; start?: number } = { flags: 'w' };
-  if (typeof start === 'number' && start > 0) {
-    streamOptions.start = start;
-    while (streamOptions.flags !== 'r+') {
-      const exists = fs.existsSync(output);
-      if (exists) streamOptions.flags = 'r+';
-      else await setTimeout(100);
+    if (onData) {
+      const buffer = await response.arrayBuffer();
+      onData?.(Buffer.from(buffer));
+      return;
     }
+
+    if (status >= 400) {
+      return onError?.(new Error(`Request failed: ${status}`), `URL: ${url}`);
+    }
+
+    if (!response.body) {
+      return onError?.(new Error('No response body'), `URL: ${url}`);
+    }
+
+    const streamOptions: { flags: string; start?: number } = { flags: 'w' };
+    if (typeof start === 'number' && start > 0) {
+      streamOptions.start = start;
+      while (streamOptions.flags !== 'r+') {
+        const exists = fs.existsSync(output);
+        if (exists) streamOptions.flags = 'r+';
+        else await setTimeout(100);
+      }
+    }
+
+    const stream = fs.createWriteStream(output, streamOptions);
+    const nodeStream = webStreamToNode(response.body);
+    nodeStream.pipe(stream);
+
+    if (onError) {
+      stream.on('error', (error) => onError(error, 'Segment write stream error'));
+      nodeStream.on('error', (error) => onError(error, 'Response stream error'));
+    }
+
+    await finished(stream);
+  } catch (error: any) {
+    return onError?.(error, 'Request error');
   }
-
-  const stream = fs.createWriteStream(output, streamOptions);
-  response.body.pipe(stream);
-
-  if (onError) {
-    stream.on('error', (error) => onError(error, 'Segment write stream error'));
-  }
-
-  await finished(stream);
 };

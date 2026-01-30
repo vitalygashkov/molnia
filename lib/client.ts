@@ -1,41 +1,11 @@
-import {
-  fetch,
-  Agent,
-  ProxyAgent,
-  RetryAgent,
-  interceptors,
-  type Dispatcher,
-  type Headers,
-} from 'undici';
-
-const { redirect } = interceptors;
-
-/**
- * Error codes that should trigger a retry
- */
-const RETRY_ERROR_CODES = [
-  'ECONNRESET',
-  'ECONNREFUSED',
-  'ENOTFOUND',
-  'ENETDOWN',
-  'ENETUNREACH',
-  'EHOSTDOWN',
-  'EHOSTUNREACH',
-  'ETIMEDOUT',
-  'EPIPE',
-  'ERR_ASSERTION',
-
-  'UND_ERR_SOCKET',
-  'UND_ERR_CONNECT_TIMEOUT',
-] as const;
+import ky, { type KyInstance } from 'ky';
+import { createFetchWithProxy } from './proxy.js';
 
 export const DEFAULT_MAX_RETRIES = 5;
 export const DEFAULT_MAX_REDIRECTIONS = 5;
 export const DEFAULT_POOL_CONNECTIONS = 5;
 
 const DEFAULT_CONNECT_TIMEOUT = 300e3; // 5 minutes
-const DEFAULT_KEEP_ALIVE_TIMEOUT = 60000; // 60 seconds
-const DEFAULT_KEEP_ALIVE_MAX_TIMEOUT = 300000; // 5 minutes
 
 /**
  * Client options interface
@@ -44,6 +14,7 @@ export interface ClientOptions {
   connections?: number;
   maxRetries?: number;
   proxy?: string;
+  fetch?: typeof fetch;
 }
 
 /**
@@ -61,36 +32,35 @@ export interface HeadResponse {
 }
 
 /**
- * Create an HTTP client with retry and redirect support
+ * Create an HTTP client with retry and proxy support
  * @param options - Client configuration options
- * @returns A dispatcher instance
+ * @returns A configured HTTP client instance
  */
-export const createClient = (options: ClientOptions = {}): Dispatcher => {
-  const agentOptions = {
-    connections: options.connections ?? DEFAULT_POOL_CONNECTIONS,
-    connectTimeout: DEFAULT_CONNECT_TIMEOUT,
-    keepAliveTimeout: DEFAULT_KEEP_ALIVE_TIMEOUT,
-    keepAliveMaxTimeout: DEFAULT_KEEP_ALIVE_MAX_TIMEOUT,
-    connect: {
-      autoSelectFamilyAttemptTimeout: 500,
-      rejectUnauthorized: false,
+export const createClient = (options: ClientOptions = {}) => {
+  const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
+
+  // Create runtime-aware proxy fetch function
+  const { proxy } = options;
+  const customFetch = proxy ? createFetchWithProxy({ proxy, fetch: options.fetch }) : (options.fetch ?? fetch);
+
+  // Create ky instance with custom fetch and built-in retry
+  const client = ky.create({
+    fetch: customFetch,
+    timeout: DEFAULT_CONNECT_TIMEOUT,
+    retry: {
+      limit: maxRetries,
+      methods: ['get', 'head'],
+      statusCodes: [408, 413, 429, 500, 502, 503, 504],
+      backoffLimit: 30000,
     },
-  };
-
-  const agent = (
-    options.proxy
-      ? new ProxyAgent({ uri: options.proxy, ...agentOptions })
-      : new Agent(agentOptions)
-  ).compose(
-    redirect({
-      maxRedirections: DEFAULT_MAX_REDIRECTIONS,
-    } as any),
-  );
-
-  return new RetryAgent(agent, {
-    maxRetries: options.maxRetries ?? DEFAULT_MAX_RETRIES,
-    errorCodes: [...RETRY_ERROR_CODES],
+    redirect: 'follow',
+    headers: {
+      'user-agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+    },
   });
+
+  return client;
 };
 
 /**
@@ -110,26 +80,23 @@ const parseContentLength = (headers: Headers): number | null => {
  * @param response - The HTTP response
  * @returns A structured head response object
  */
-export const parseHead = (response: any): HeadResponse => {
+export const parseHead = (response: Response): HeadResponse => {
   const { headers, url } = response;
   const encoding = headers.get('content-encoding') || '';
   const type = headers.get('content-type') || '';
   const isCompressed = !!encoding && ['gzip', 'deflate'].includes(encoding);
   const length = parseContentLength(headers);
   const acceptBytesRange =
-    headers.get('accept-ranges') === 'bytes' || headers.get('content-range')?.includes('bytes');
+    headers.get('accept-ranges') === 'bytes' || !!headers.get('content-range')?.includes('bytes');
   return {
-    ...Object.fromEntries(headers.entries()),
+    ...Object.fromEntries((headers as any).entries()),
     contentEncoding: encoding,
     contentType: type,
     contentLength: length,
     acceptBytesRange,
     isCompressed,
     isProgressive:
-      (length && acceptBytesRange) ||
-      type.includes('video') ||
-      type.includes('audio') ||
-      type.includes('zip'),
+      (length && acceptBytesRange) || type.includes('video') || type.includes('audio') || type.includes('zip'),
     url,
   };
 };
@@ -142,13 +109,12 @@ export const parseHead = (response: any): HeadResponse => {
  */
 export const fetchHead = async (
   input: string,
-  { headers, dispatcher }: { headers?: Record<string, string>; dispatcher?: Dispatcher } = {},
+  options: { headers?: Record<string, string>; client?: KyInstance } = {},
 ): Promise<HeadResponse> => {
+  const client = options.client ?? createClient();
   try {
-    const response = await fetch(input, {
-      method: 'GET',
-      dispatcher,
-      headers: { ...headers, Range: 'bytes=0-0' },
+    const response = await client.get(input, {
+      headers: { ...options.headers, Range: 'bytes=0-0' },
     });
     return parseHead(response);
   } catch (e: any) {

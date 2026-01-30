@@ -4,7 +4,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { createProgress, type Progress } from './progress.js';
 import { save, type SaveOptions } from './save.js';
-import { DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
+import { ClientOptions, DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
 import { createQueue, type QueueWorker } from './queue.js';
 
 /**
@@ -37,15 +37,13 @@ export interface SegmentData {
 /**
  * Segments download options interface
  */
-export interface SegmentsDownloadOptions {
+export interface SegmentsDownloadOptions extends ClientOptions {
   output?: string;
   tempDir?: string;
   headers?: Record<string, string>;
-  connections?: number;
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: Progress) => void;
   onError?: (error: Error, comment?: string) => void;
-  dispatcher?: any;
 }
 
 /**
@@ -53,11 +51,8 @@ export interface SegmentsDownloadOptions {
  * @param data - Array of segment data
  * @param options - Download options
  */
-export const downloadSegments = async (
-  data: SegmentData[],
-  options: SegmentsDownloadOptions = {},
-): Promise<void> => {
-  const dispatcher = options.dispatcher ?? createClient(options);
+export const downloadSegments = async (data: SegmentData[], options: SegmentsDownloadOptions = {}): Promise<void> => {
+  const client = createClient(options);
   const {
     output,
     tempDir = process.cwd(),
@@ -91,16 +86,11 @@ export const downloadSegments = async (
   };
 
   const getErrorHandler = (saveOptions: SaveOptions) => (error: any, comment?: string) => {
-    // https://github.com/nodejs/undici/issues/1923
-    // https://github.com/nodejs/undici/issues/3300
-    if (error.code?.includes('UND_ERR_SOCKET') || error.code?.includes('ECONNRESET')) {
-      // Retry on socket or connection reset error
+    // Retry on socket or connection reset error
+    if (error.code?.includes('ECONNRESET') || error.code?.includes('ECONNREFUSED')) {
       return queue.push(saveOptions);
     } else {
-      onError?.(
-        error,
-        comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`,
-      );
+      onError?.(error, comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`);
     }
     return undefined;
   };
@@ -116,7 +106,7 @@ export const downloadSegments = async (
     const saveOptions: SaveOptions = {
       url,
       headers: segmentHeaders || headers,
-      dispatcher,
+      client,
       output: segmentOutput,
       onHeaders,
       onData: onChunkData,

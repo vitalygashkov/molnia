@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { parseOptions } from './lib/args.js';
-import { fetchHead, createClient } from './lib/client.js';
+import { fetchHead, createClient, ClientOptions } from './lib/client.js';
 import { downloadProgressive } from './lib/progressive.js';
 import { save } from './lib/save.js';
 import { downloadSegments } from './lib/segments.js';
@@ -9,18 +9,14 @@ import { downloadSegments } from './lib/segments.js';
 /**
  * Download options interface
  */
-export interface DownloadOptions {
+export interface DownloadOptions extends ClientOptions {
   output?: string;
   tempDir?: string;
   headers?: Record<string, string>;
-  connections?: number;
-  maxRetries?: number;
   maxRedirections?: number;
-  proxy?: string;
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: any) => void;
   onError?: (error: Error, url?: string) => void;
-  dispatcher?: any;
 }
 
 /**
@@ -29,8 +25,7 @@ export interface DownloadOptions {
  * @param output - Optional output filename
  * @returns The output filename
  */
-const parseOutput = (url: string, output?: string): string =>
-  output || url?.split('/').at(-1) || 'download';
+const parseOutput = (url: string, output?: string): string => output || url?.split('/').at(-1) || 'download';
 
 /**
  * Download a file from a URL
@@ -38,8 +33,8 @@ const parseOutput = (url: string, output?: string): string =>
  * @param options - Download options
  */
 export const download = async (url: string, options: DownloadOptions = {}): Promise<void> => {
-  options.dispatcher = createClient(options);
-  const head = await fetchHead(url, options);
+  const client = createClient(options);
+  const head = await fetchHead(url, { headers: options.headers, client });
   options.output = parseOutput(head.url, options.output);
 
   if (!options.output) {
@@ -53,7 +48,7 @@ export const download = async (url: string, options: DownloadOptions = {}): Prom
       url: head.url,
       headers: options.headers,
       output: options.output,
-      dispatcher: options.dispatcher,
+      client: client,
     });
   }
 };
