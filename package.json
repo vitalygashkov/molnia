@@ -1,6 +1,6 @@
 {
   "name": "molnia",
-  "version": "0.1.7",
+  "version": "0.2.0-alpha.5",
   "description": "Fast and lightweight library for downloading files",
   "keywords": [
     "curl",

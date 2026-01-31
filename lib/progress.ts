@@ -52,6 +52,7 @@ export interface ProgressState {
 export interface Progress {
   state: ProgressState;
   setTotal(total: number): void;
+  setCurrent(bytes: number): void;
   increase(size: number): void;
   stop(): void;
   log(): void;
@@ -80,6 +81,10 @@ export const createProgress = (count: number = 0): Progress => {
   return {
     state,
     setTotal,
+    setCurrent(bytes: number): void {
+      state.current.b += bytes;
+      state.current.mb = state.current.b / 1024 / 1024;
+    },
     increase(size: number): void {
       state.current.b += size;
       state.current.mb = state.current.b / 1024 / 1024;

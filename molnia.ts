@@ -1,6 +1,7 @@
 import { fetchHead, createClient, ClientOptions } from './lib/client.js';
 import { downloadProgressive } from './lib/progressive.js';
 import { save } from './lib/save.js';
+export { getDownloadProgress, cleanupDownload } from './lib/metadata.js';
 
 /**
  * Download options interface
@@ -13,6 +14,9 @@ export interface DownloadOptions extends ClientOptions {
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: any) => void;
   onError?: (error: Error, url?: string) => void;
+  signal?: AbortSignal;
+  resume?: boolean;
+  overwrite?: boolean;
 }
 
 /**
