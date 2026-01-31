@@ -20,7 +20,10 @@ export const getRuntime = () => {
 type FetchFn = typeof fetch;
 type FetchOptions = { proxy: string; fetch?: FetchFn };
 
-const withCustomFetchOptions = (options: Record<string, unknown>, customFetch?: FetchFn): FetchFn => {
+const withCustomFetchOptions = (
+  options: Record<string, unknown>,
+  customFetch?: FetchFn,
+): FetchFn => {
   return (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     return (customFetch ?? fetch)(input, { ...init, ...options });
   };

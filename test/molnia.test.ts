@@ -85,7 +85,10 @@ describe('integration tests', () => {
           if (auth === 'Bearer test-token') {
             return new HttpResponse(segmentData, {
               status: 200,
-              headers: { 'Content-Type': 'video/mp4', 'Content-Length': String(segmentData.length) },
+              headers: {
+                'Content-Type': 'video/mp4',
+                'Content-Length': String(segmentData.length),
+              },
             });
           }
           return new HttpResponse('Unauthorized', { status: 401 });
@@ -94,7 +97,12 @@ describe('integration tests', () => {
 
       const testOutputPath = path.join(testOutputDir, 'auth-segments.mp4');
       await downloadSegments(
-        [{ url: 'https://test.molnia/integration/segment/auth', headers: { Authorization: 'Bearer test-token' } }],
+        [
+          {
+            url: 'https://test.molnia/integration/segment/auth',
+            headers: { Authorization: 'Bearer test-token' },
+          },
+        ],
         { output: testOutputPath },
       );
 

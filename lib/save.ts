@@ -60,7 +60,17 @@ const webStreamToNode = (webStream: ReadableStream<Uint8Array>): Readable => {
  * @returns Promise that resolves when the file is saved
  */
 export const save = async (options: SaveOptions): Promise<void> => {
-  const { url, method = 'GET', headers = {}, range, output, client = ky, onHeaders, onData, onError } = options;
+  const {
+    url,
+    method = 'GET',
+    headers = {},
+    range,
+    output,
+    client = ky,
+    onHeaders,
+    onData,
+    onError,
+  } = options;
 
   if (!('user-agent' in headers) && !('User-Agent' in headers)) {
     headers['user-agent'] =

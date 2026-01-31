@@ -41,7 +41,9 @@ export const createClient = (options: ClientOptions = {}) => {
 
   // Create runtime-aware proxy fetch function
   const { proxy } = options;
-  const customFetch = proxy ? createFetchWithProxy({ proxy, fetch: options.fetch }) : (options.fetch ?? fetch);
+  const customFetch = proxy
+    ? createFetchWithProxy({ proxy, fetch: options.fetch })
+    : (options.fetch ?? fetch);
 
   // Create ky instance with custom fetch and built-in retry
   const client = ky.create({
@@ -96,7 +98,10 @@ export const parseHead = (response: Response): HeadResponse => {
     acceptBytesRange,
     isCompressed,
     isProgressive:
-      (length && acceptBytesRange) || type.includes('video') || type.includes('audio') || type.includes('zip'),
+      (length && acceptBytesRange) ||
+      type.includes('video') ||
+      type.includes('audio') ||
+      type.includes('zip'),
     url,
   };
 };

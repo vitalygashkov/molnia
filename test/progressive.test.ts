@@ -2,7 +2,12 @@ import { test, expect, describe } from 'vitest';
 
 // Import internal functions by accessing them through the module
 // We'll test the logic by importing and testing the exported functions
-import { downloadProgressive, getChunkSize, getRanges, MAX_CHUNK_SIZE_MB } from '../lib/progressive';
+import {
+  downloadProgressive,
+  getChunkSize,
+  getRanges,
+  MAX_CHUNK_SIZE_MB,
+} from '../lib/progressive';
 
 describe('progressive', () => {
   describe('getChunkSize', () => {
@@ -75,9 +80,9 @@ describe('progressive', () => {
 
   describe('downloadProgressive', () => {
     test('throws error when no output path', async () => {
-      await expect(downloadProgressive('https://example.com/test.mp4', {}, 1000, 'video/mp4')).rejects.toThrow(
-        'Output path is required',
-      );
+      await expect(
+        downloadProgressive('https://example.com/test.mp4', {}, 1000, 'video/mp4'),
+      ).rejects.toThrow('Output path is required');
     });
   });
 });
