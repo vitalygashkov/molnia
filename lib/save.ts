@@ -57,9 +57,9 @@ const webStreamToNode = (webStream: ReadableStream<Uint8Array>): Readable => {
 /**
  * Save a file from a URL
  * @param options - Save options
- * @returns Promise that resolves when the file is saved
+ * @returns Promise that resolves with error or void
  */
-export const save = async (options: SaveOptions): Promise<void> => {
+export const save = async (options: SaveOptions): Promise<Error | void> => {
   const {
     url,
     method = 'GET',
@@ -116,11 +116,11 @@ export const save = async (options: SaveOptions): Promise<void> => {
     }
 
     if (status >= 400) {
-      return onError?.(new Error(`Request failed: ${status}`), `URL: ${url}`);
+      return new Error(`Request failed: ${status}`);
     }
 
     if (!response.body) {
-      return onError?.(new Error('No response body'), `URL: ${url}`);
+      return new Error('No response body');
     }
 
     const streamOptions: { flags: string; start?: number } = { flags: 'w' };
@@ -143,7 +143,7 @@ export const save = async (options: SaveOptions): Promise<void> => {
     }
 
     await finished(stream);
-  } catch (error: any) {
-    return onError?.(error, 'Request error');
+  } catch (error) {
+    return error instanceof Error ? error : new Error(String(error));
   }
 };

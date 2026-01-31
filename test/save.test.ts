@@ -132,8 +132,6 @@ describe('save', () => {
   });
 
   test('handles error status codes', async () => {
-    let errorReceived: any = null;
-
     const mockResponse = {
       status: 404,
       headers: new Headers({}),
@@ -143,16 +141,14 @@ describe('save', () => {
       get: () => Promise.resolve(mockResponse),
     };
 
-    await save({
+    const error = await save({
       url: 'https://example.com/notfound.mp4',
       output: testOutputPath,
       client: mockClient as any,
-      onError: (error) => {
-        errorReceived = error;
-      },
     });
 
-    expect(errorReceived).not.toBeNull();
-    expect(errorReceived.message).toContain('404');
+    expect(error).toBeDefined();
+    expect(error instanceof Error).toBe(true);
+    expect(error?.message).toContain('404');
   });
 });

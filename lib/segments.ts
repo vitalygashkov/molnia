@@ -2,10 +2,13 @@ import { finished } from 'node:stream/promises';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import * as fastq from 'fastq';
 import { createProgress, type Progress } from './progress.js';
 import { save, type SaveOptions } from './save.js';
 import { ClientOptions, DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
-import { createQueue, type QueueWorker } from './queue.js';
+import { META_VERSION, getMetaPath, readMeta, writeMeta, removeMeta } from './metadata.js';
+
+const MAX_RETRIES = 3;
 
 /**
  * Get segment output file path
@@ -35,6 +38,17 @@ export interface SegmentData {
 }
 
 /**
+ * Metadata interface for segments download
+ */
+interface SegmentsMeta {
+  version: number;
+  output: string;
+  segments: Array<{ url: string; headers: Record<string, string> }>;
+  completed: boolean[];
+  bytesDownloaded: number;
+}
+
+/**
  * Segments download options interface
  */
 export interface SegmentsDownloadOptions extends ClientOptions {
@@ -44,6 +58,9 @@ export interface SegmentsDownloadOptions extends ClientOptions {
   onChunkData?: (data: Buffer | ArrayBuffer) => void;
   onProgress?: (progress: Progress) => void;
   onError?: (error: Error, comment?: string) => void;
+  signal?: AbortSignal;
+  resume?: boolean;
+  overwrite?: boolean;
 }
 
 /**
@@ -64,6 +81,9 @@ export const downloadSegments = async (
     onChunkData,
     onProgress,
     onError,
+    signal,
+    resume = true,
+    overwrite = false,
   } = options;
 
   const tempDirInfo = await fsp.stat(tempDir).catch(() => null);
@@ -78,53 +98,149 @@ export const downloadSegments = async (
   const tempPathInfo = await fsp.stat(tempPath).catch(() => null);
   if (!tempPathInfo || !tempPathInfo.isDirectory()) await fsp.mkdir(tempPath, { recursive: true });
 
-  const queue = createQueue(save as QueueWorker<SaveOptions>, connections);
+  const metaPath = getMetaPath(output);
+
+  // Clear or resume based on options
+  if (overwrite || !resume) {
+    await clear(tempPath);
+    await removeMeta(metaPath);
+  }
+
+  const canonicalSegments = data.map(({ url, headers: segmentHeaders }) => ({
+    url,
+    headers: { ...headers, ...segmentHeaders },
+  }));
+
+  // Load or create metadata
+  let meta: SegmentsMeta | null = resume
+    ? ((await readMeta(metaPath)) as SegmentsMeta | null)
+    : null;
+  const isMetaVersionMismatch = meta?.version !== META_VERSION;
+  const isMetaOutputMismatch = meta?.output !== output;
+  const isMetaSegmentsEmpty = !Array.isArray(meta?.segments);
+  const isMetaSegmentsCountMismatch = meta?.segments?.length !== canonicalSegments.length;
+
+  if (
+    !meta ||
+    isMetaVersionMismatch ||
+    isMetaOutputMismatch ||
+    isMetaSegmentsEmpty ||
+    isMetaSegmentsCountMismatch
+  ) {
+    meta = {
+      version: META_VERSION,
+      output,
+      segments: canonicalSegments,
+      completed: Array(canonicalSegments.length).fill(false),
+      bytesDownloaded: 0,
+    };
+    await writeMeta(metaPath, meta);
+  }
+
+  // Track segment sizes as they come in
+  const segmentSizes: Record<number, number> = {};
+  const headersReceived: Record<number, boolean> = {};
+
+  const createOnHeaders = (index: number) => (headers: Record<string, string>) => {
+    if (headersReceived[index]) return;
+    headersReceived[index] = true;
+    const size = parseInt(headers['content-length'] || '0', 10);
+    const validatedSize = Number.isNaN(size) || size < 0 ? 0 : size;
+    segmentSizes[index] = validatedSize;
+    progress.increase(validatedSize);
+    if (onProgress) handleProgress(progress, onProgress);
+  };
+
+  const handleProgress = (p: Progress, op?: (progress: Progress) => void): void => {
+    if (op) op(p);
+    else p.log();
+  };
+
+  // Create queue with custom handler for resumability
+  const queue = fastq.promise(
+    async (params: {
+      index: number;
+      saveOptions: SaveOptions;
+      segmentBytes?: number;
+      retryCount?: number;
+    }) => {
+      if (signal?.aborted) return;
+      const saveResult = await save(params.saveOptions);
+      if (saveResult instanceof Error) {
+        // Retry on socket or connection reset error
+        const error = saveResult as Error & { code?: string };
+        if (error.code?.includes('ECONNRESET') || error.code?.includes('UND_ERR_SOCKET')) {
+          const retryCount = (params.retryCount || 0) + 1;
+          if (retryCount < MAX_RETRIES) {
+            if (!signal?.aborted) queue.push({ ...params, retryCount });
+          } else {
+            onError?.(
+              error,
+              `Max retries exceeded. Code: ${error.code}. Message: ${error.message}`,
+            );
+          }
+        } else {
+          onError?.(error, `Queue task error. Code: ${error.code}. Message: ${error.message}`);
+        }
+        return;
+      }
+      meta!.completed[params.index] = true;
+      if (params.segmentBytes) {
+        meta!.bytesDownloaded = (meta!.bytesDownloaded || 0) + params.segmentBytes;
+      }
+      await writeMeta(metaPath, meta!);
+    },
+    connections,
+  );
+
   const progress = createProgress(data.length);
-
-  const onHeaders = (headers: any) => {
-    const size = parseInt(headers['content-length']);
-    progress.increase(size);
-    if (onProgress) onProgress(progress);
-    else progress.log();
-  };
-
-  const getErrorHandler = (saveOptions: SaveOptions) => (error: any, comment?: string) => {
-    // Retry on socket or connection reset error
-    if (error.code?.includes('ECONNRESET') || error.code?.includes('ECONNREFUSED')) {
-      return queue.push(saveOptions);
-    } else {
-      onError?.(
-        error,
-        comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`,
-      );
-    }
-    return undefined;
-  };
+  progress.setCurrent(meta?.bytesDownloaded || 0);
 
   const segmentOutputs: string[] = [];
-  for (let i = 0; i < data.length; i += 1) {
-    const segment = data[i];
+  for (let i = 0; i < canonicalSegments.length; i += 1) {
+    const segment = canonicalSegments[i];
     if (!segment) continue;
 
     const { url, headers: segmentHeaders } = segment;
     const segmentOutput = getSegmentOutput(url, tempPath, i);
     segmentOutputs.push(segmentOutput);
+
+    // Skip already completed segments when resuming
+    if (resume && meta?.completed?.[i]) continue;
+
     const saveOptions: SaveOptions = {
       url,
-      headers: segmentHeaders || headers,
+      headers: segmentHeaders,
       client,
       output: segmentOutput,
-      onHeaders,
+      onHeaders: createOnHeaders(i),
       onData: onChunkData,
       onError,
     };
-    saveOptions.onError = getErrorHandler(saveOptions);
-    queue.push(saveOptions).catch(getErrorHandler(saveOptions));
+
+    queue.push({
+      index: i,
+      saveOptions,
+      get segmentBytes(): number {
+        return segmentSizes[i] || 0;
+      },
+    });
   }
 
   await queue.drained();
   progress.stop();
   if (!onProgress) progress.stopLog();
+
+  if (signal?.aborted) return;
+
+  // Check if all segments completed
+  const allCompleted = Array.isArray(meta?.completed) ? meta.completed.every(Boolean) : false;
+
+  if (!allCompleted) {
+    const error = new Error('Not all segments were downloaded successfully. Try resuming later.');
+    onError?.(error, 'Segments incomplete');
+    return;
+  }
 
   const dir = path.dirname(output);
   const dirExists = await fsp
@@ -145,6 +261,7 @@ export const downloadSegments = async (
   outputStream.end();
   await finished(outputStream);
 
-  // Clear temp directory with segments
+  // Clear temp directory with segments and metadata
   await clear(tempPath);
+  await removeMeta(metaPath);
 };
