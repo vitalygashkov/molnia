@@ -2,10 +2,10 @@ import { finished } from 'node:stream/promises';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import * as fastq from 'fastq';
 import { createProgress, type Progress } from './progress.js';
 import { save, type SaveOptions } from './save.js';
 import { ClientOptions, DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
-import { createQueue, type QueueWorker } from './queue.js';
 
 /**
  * Get segment output file path
@@ -51,10 +51,7 @@ export interface SegmentsDownloadOptions extends ClientOptions {
  * @param data - Array of segment data
  * @param options - Download options
  */
-export const downloadSegments = async (
-  data: SegmentData[],
-  options: SegmentsDownloadOptions = {},
-): Promise<void> => {
+export const downloadSegments = async (data: SegmentData[], options: SegmentsDownloadOptions = {}): Promise<void> => {
   const client = createClient(options);
   const {
     output,
@@ -78,7 +75,7 @@ export const downloadSegments = async (
   const tempPathInfo = await fsp.stat(tempPath).catch(() => null);
   if (!tempPathInfo || !tempPathInfo.isDirectory()) await fsp.mkdir(tempPath, { recursive: true });
 
-  const queue = createQueue(save as QueueWorker<SaveOptions>, connections);
+  const queue = fastq.promise(save, connections);
   const progress = createProgress(data.length);
 
   const onHeaders = (headers: any) => {
@@ -93,10 +90,7 @@ export const downloadSegments = async (
     if (error.code?.includes('ECONNRESET') || error.code?.includes('ECONNREFUSED')) {
       return queue.push(saveOptions);
     } else {
-      onError?.(
-        error,
-        comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`,
-      );
+      onError?.(error, comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`);
     }
     return undefined;
   };

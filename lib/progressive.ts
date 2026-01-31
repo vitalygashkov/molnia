@@ -1,10 +1,10 @@
 import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import { dirname } from 'node:path';
+import * as fastq from 'fastq';
 import { DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
 import { createProgress, type Progress } from './progress.js';
 import { save, type SaveOptions } from './save.js';
-import { createQueue, type QueueWorker } from './queue.js';
 
 export const MAX_CHUNK_SIZE_MB = 2;
 
@@ -13,8 +13,7 @@ export const MAX_CHUNK_SIZE_MB = 2;
  * @param size - Total file size in bytes
  * @returns Chunk size in bytes
  */
-export const getChunkSize = (size: number): number =>
-  Math.floor(Math.min(size / 5, MAX_CHUNK_SIZE_MB * 1024 * 1024));
+export const getChunkSize = (size: number): number => Math.floor(Math.min(size / 5, MAX_CHUNK_SIZE_MB * 1024 * 1024));
 
 /**
  * Get byte ranges for chunked download
@@ -80,16 +79,9 @@ export const downloadProgressive = async (
   url: string,
   options: ProgressiveDownloadOptions = {},
   contentLength: number,
-  contentType: string,
+  contentType: string
 ): Promise<void> => {
-  const {
-    output,
-    headers,
-    connections = DEFAULT_POOL_CONNECTIONS,
-    onChunkData,
-    onProgress,
-    onError,
-  } = options;
+  const { output, headers, connections = DEFAULT_POOL_CONNECTIONS, onChunkData, onProgress, onError } = options;
   const httpClient = options.client ?? createClient(options);
   const ranges = getRanges(contentLength, connections);
 
@@ -107,7 +99,7 @@ export const downloadProgressive = async (
     return;
   }
 
-  const queue = createQueue(save as QueueWorker<SaveOptions>, connections);
+  const queue = fastq.promise(save, connections);
   const progress = createProgress(ranges.length);
 
   progress.setTotal(contentLength);
@@ -115,9 +107,7 @@ export const downloadProgressive = async (
   const onHeaders = (headers: any, _url: string, statusCode: number) => {
     if (headers['content-type'] !== contentType) {
       const msg = `Content type mismatch. Received ${headers['content-type']} instead of ${contentType}. Status: ${statusCode}`;
-      queue
-        .killAndDrain()
-        .then(() => onError?.(new TypeError(msg, { cause: new Error(JSON.stringify(headers)) })));
+      queue.killAndDrain().then(() => onError?.(new TypeError(msg, { cause: new Error(JSON.stringify(headers)) })));
     }
     const size = parseInt(headers['content-length']);
     progress.increase(size);
