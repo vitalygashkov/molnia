@@ -6,14 +6,14 @@ import { createProgress, type Progress } from './progress.js';
 import { save, type SaveOptions } from './save.js';
 import { createQueue, type QueueWorker } from './queue.js';
 
-const MAX_CHUNK_SIZE_MB = 2;
+export const MAX_CHUNK_SIZE_MB = 2;
 
 /**
  * Calculate chunk size based on total size
  * @param size - Total file size in bytes
  * @returns Chunk size in bytes
  */
-const getChunkSize = (size: number): number => Math.floor(Math.min(size / 5, MAX_CHUNK_SIZE_MB * 1024 * 1024));
+export const getChunkSize = (size: number): number => Math.floor(Math.min(size / 5, MAX_CHUNK_SIZE_MB * 1024 * 1024));
 
 /**
  * Get byte ranges for chunked download
@@ -21,7 +21,7 @@ const getChunkSize = (size: number): number => Math.floor(Math.min(size / 5, MAX
  * @param connections - Number of concurrent connections
  * @returns Array of [start, end] byte ranges
  */
-const getRanges = (size: number, connections: number): [number, number][] => {
+export const getRanges = (size: number, connections: number): [number, number][] => {
   let chunkSize = getChunkSize(size);
 
   let extraSize = 0;
