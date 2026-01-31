@@ -1,10 +1,6 @@
-#!/usr/bin/env node
-
-import { parseOptions } from './lib/args.js';
 import { fetchHead, createClient, ClientOptions } from './lib/client.js';
 import { downloadProgressive } from './lib/progressive.js';
 import { save } from './lib/save.js';
-import { downloadSegments } from './lib/segments.js';
 
 /**
  * Download options interface
@@ -25,7 +21,8 @@ export interface DownloadOptions extends ClientOptions {
  * @param output - Optional output filename
  * @returns The output filename
  */
-const parseOutput = (url: string, output?: string): string => output || url?.split('/').at(-1) || 'download';
+const parseOutput = (url: string, output?: string): string =>
+  output || url?.split('/').at(-1) || 'download';
 
 /**
  * Download a file from a URL
@@ -53,17 +50,4 @@ export const download = async (url: string, options: DownloadOptions = {}): Prom
   }
 };
 
-export { downloadSegments };
-
-// CLI entry point
-const cliOptions = parseOptions();
-
-const start = async (): Promise<void> => {
-  if (cliOptions) {
-    for (const url of cliOptions.urls) {
-      await download(url, cliOptions as DownloadOptions);
-    }
-  }
-};
-
-if (cliOptions) start();
+export { downloadSegments } from './lib/segments.js';

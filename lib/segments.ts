@@ -51,7 +51,10 @@ export interface SegmentsDownloadOptions extends ClientOptions {
  * @param data - Array of segment data
  * @param options - Download options
  */
-export const downloadSegments = async (data: SegmentData[], options: SegmentsDownloadOptions = {}): Promise<void> => {
+export const downloadSegments = async (
+  data: SegmentData[],
+  options: SegmentsDownloadOptions = {},
+): Promise<void> => {
   const client = createClient(options);
   const {
     output,
@@ -90,7 +93,10 @@ export const downloadSegments = async (data: SegmentData[], options: SegmentsDow
     if (error.code?.includes('ECONNRESET') || error.code?.includes('ECONNREFUSED')) {
       return queue.push(saveOptions);
     } else {
-      onError?.(error, comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`);
+      onError?.(
+        error,
+        comment || `Queue task error. Code: ${error.code}. Message: ${error.message}`,
+      );
     }
     return undefined;
   };
