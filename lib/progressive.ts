@@ -212,7 +212,10 @@ export const downloadProgressive = async (
     if (signal?.aborted) return;
     const { saveOptions, index } = task;
     const error = await save(saveOptions);
-    if (error instanceof Error) return;
+    if (error instanceof Error) {
+      onError?.(error);
+      return;
+    }
     if (typeof index === 'number') {
       const range = ranges[index];
       if (range) {
@@ -226,16 +229,13 @@ export const downloadProgressive = async (
   }, connections);
 
   const progress = createProgress(ranges.length);
-  progress.setCurrent(meta?.bytesDownloaded || 0);
   progress.setTotal(contentLength);
 
   let startIndex = 0;
   if (isResume && meta) {
     startIndex = getTrustedPrefixIndex(meta.completed);
     const downloaded = sumRanges(ranges, startIndex);
-    if (downloaded > 0) {
-      progress.increase(downloaded);
-    }
+    progress.setCurrent(meta?.bytesDownloaded || downloaded || 0);
   }
 
   const handleProgress = (p: Progress, op?: (progress: Progress) => void): void => {
@@ -243,11 +243,22 @@ export const downloadProgressive = async (
     else p.log();
   };
 
-  const onHeaders = (responseHeaders: Record<string, string>, _url: string, statusCode: number) => {
+  const onHeaders = async (
+    responseHeaders: Record<string, string>,
+    _url: string,
+    statusCode: number,
+  ) => {
     const contentTypeHeader = responseHeaders['content-type'] || responseHeaders['Content-Type'];
     if (contentTypeHeader !== contentType) {
       const msg = `Content type mismatch. Received ${contentTypeHeader} instead of ${contentType}. Status: ${statusCode}`;
-      queue.killAndDrain().then(() => onError?.(new TypeError(msg)));
+      try {
+        await queue.killAndDrain();
+      } catch (killError) {
+        onError?.(killError instanceof Error ? killError : new Error(String(killError)));
+        return;
+      }
+      onError?.(new TypeError(msg));
+      return;
     }
     const size = parseInt(responseHeaders['content-length'] || '0');
     progress.increase(size);
@@ -285,7 +296,7 @@ export const downloadProgressive = async (
   const actualSize = stat?.size;
   const expectedSize = contentLength;
 
-  if (!actualSize || actualSize !== expectedSize) {
+  if (actualSize == null || actualSize !== expectedSize) {
     onError?.(new Error(`Actual size ${actualSize} doesn't match expected size ${expectedSize}`));
   } else {
     await removeMeta(metaPath);

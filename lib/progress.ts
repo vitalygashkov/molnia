@@ -82,8 +82,8 @@ export const createProgress = (count: number = 0): Progress => {
     state,
     setTotal,
     setCurrent(bytes: number): void {
-      state.current.b += bytes;
-      state.current.mb = state.current.b / 1024 / 1024;
+      state.current.b = bytes;
+      state.current.mb = bytes / 1024 / 1024;
     },
     increase(size: number): void {
       state.current.b += size;

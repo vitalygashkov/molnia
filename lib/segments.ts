@@ -8,6 +8,8 @@ import { save, type SaveOptions } from './save.js';
 import { ClientOptions, DEFAULT_POOL_CONNECTIONS, createClient } from './client.js';
 import { META_VERSION, getMetaPath, readMeta, writeMeta, removeMeta } from './metadata.js';
 
+const MAX_RETRIES = 3;
+
 /**
  * Get segment output file path
  * @param _url - Segment URL (unused but kept for API compatibility)
@@ -106,7 +108,7 @@ export const downloadSegments = async (
 
   const canonicalSegments = data.map(({ url, headers: segmentHeaders }) => ({
     url,
-    headers: segmentHeaders || headers,
+    headers: { ...headers, ...segmentHeaders },
   }));
 
   // Load or create metadata
@@ -137,11 +139,15 @@ export const downloadSegments = async (
 
   // Track segment sizes as they come in
   const segmentSizes: Record<number, number> = {};
+  const headersReceived: Record<number, boolean> = {};
 
   const createOnHeaders = (index: number) => (headers: Record<string, string>) => {
-    const size = parseInt(headers['content-length'] || '0');
-    segmentSizes[index] = size;
-    progress.increase(size);
+    if (headersReceived[index]) return;
+    headersReceived[index] = true;
+    const size = parseInt(headers['content-length'] || '0', 10);
+    const validatedSize = Number.isNaN(size) || size < 0 ? 0 : size;
+    segmentSizes[index] = validatedSize;
+    progress.increase(validatedSize);
     if (onProgress) handleProgress(progress, onProgress);
   };
 
@@ -152,14 +158,27 @@ export const downloadSegments = async (
 
   // Create queue with custom handler for resumability
   const queue = fastq.promise(
-    async (params: { index: number; saveOptions: SaveOptions; segmentBytes?: number }) => {
+    async (params: {
+      index: number;
+      saveOptions: SaveOptions;
+      segmentBytes?: number;
+      retryCount?: number;
+    }) => {
       if (signal?.aborted) return;
       const saveResult = await save(params.saveOptions);
       if (saveResult instanceof Error) {
         // Retry on socket or connection reset error
         const error = saveResult as Error & { code?: string };
         if (error.code?.includes('ECONNRESET') || error.code?.includes('UND_ERR_SOCKET')) {
-          if (!signal?.aborted) queue.push(params);
+          const retryCount = (params.retryCount || 0) + 1;
+          if (retryCount < MAX_RETRIES) {
+            if (!signal?.aborted) queue.push({ ...params, retryCount });
+          } else {
+            onError?.(
+              error,
+              `Max retries exceeded. Code: ${error.code}. Message: ${error.message}`,
+            );
+          }
         } else {
           onError?.(error, `Queue task error. Code: ${error.code}. Message: ${error.message}`);
         }

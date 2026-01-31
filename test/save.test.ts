@@ -147,7 +147,7 @@ describe('save', () => {
       client: mockClient as any,
     });
 
-    expect(error).not.toBeNull();
+    expect(error).toBeDefined();
     expect(error instanceof Error).toBe(true);
     expect(error?.message).toContain('404');
   });
